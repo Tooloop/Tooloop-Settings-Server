@@ -1,0 +1,16 @@
+
+<script type="text/javascript" src="/static/js/jquery-2.2.1.min.js"></script>
+<script type='application/javascript' src='/static/js/fastclick.min.js'></script>
+
+<script type=text/javascript>
+
+  $(function() {
+      FastClick.attach(document.body);
+  });
+
+  function toggleMenu() {
+    $('body').toggleClass('mobile-menu');
+    $('#sidebar').toggleClass('mobile-menu');
+  }
+
+</script>

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<table class="settings-table">
+  <tr>
+    <td colspan="2" style="padding: 2em 0; text-align: center;">
+      <p><img src="/static/img/tooloop_logo.png" style="width:100%; max-width:240px;"/></p>
+      <h1>Tooloop OS</h1>
+      <span class="gray">{{osVersion}}</span>
+    </td>
+  </tr>
+  <tr><td colspan="2"><h2>System</h2></td></tr>
+  <tr>
+    <td class="label-column">Name</td>
+    <td class="value-column">
+      <input type="text" value="{{hostname}}"/></input>
+    </td>
+  </tr>
+  <tr><td colspan="2"><h2>Change password</h2></td></tr>
+
+  <tr>
+    <td class="label-column"></td>
+    <td class="value-column">
+      <p><input type="password" id="old-password" name="old-password"/> <label for="old-password">Old password</label></p>
+      <p><input type="password" id="new-password" name="new-password"/> <label for="new-password">New password</label></p>
+      <p><input type="password" id="repeat-new-password" name="repeat-new-password"/> <label for="repeat-new-password">Repeat new password</label></p>
+    </td>
+  </tr>
+
+  <tr><td colspan="2"><h2>Logs</h2></td></tr>
+  <tr>
+    <td colspan="2" class="value-column">
+
+      <div style="width:calc(50% - 1em); float:left; margin-right:1em">
+        <label>System</label>
+        <textarea style="height:20em;" readonly id="system-log"></textarea>
+      </div>
+
+      <div style="width:calc(50% - 1em); float:left; margin-left:1em">
+        <label>Presentation</label>
+        <textarea style="height:20em;" readonly id="presentation-log"></textarea>
+      </div>
+
+    </td>
+  </tr>
+
+</table>
+{% endblock %}
+
+
+{% block page_footer_scripts %}
+<script type="text/javascript">
+  $(document).ready(function() {
+    // open a websocket
+    // onmessage
+      // check if scrolled to bottom
+      // append data to textfield
+      // if was scrolled to bottom, scroll to bottom again
+
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,3 @@
+*.pyc
+installed_app/*
+static/css/.sass-cache

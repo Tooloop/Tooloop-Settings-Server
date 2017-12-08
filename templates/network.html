@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block content %}
+<table class="settings-table">
+  <tr><td colspan="2"><h2>Network</h2></td></tr>
+  <tr>
+    <td></td>
+    <td class="value-column">
+      <div>
+        <input type="checkbox" id="network-switch" name="network-switch"
+               class="switch" data-checked="<!--#call networkEnabled-->"/>
+        <label for="network-switch">on / off</label>
+      </div>
+    </td>
+  </tr>
+</table>
+
+{# for each interface #}
+
+<table class="settings-table">
+  <tr>
+    <td class="label-column">Configure IPv4</td>
+    <td class="value-column">
+      <select id="ipv4-select">
+        <option>Manually</option>
+        <option>DHCP</option>
+        <option>DHCP with manual address</option>
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <td class="label-column">IP address</td>
+    <td class="value-column"><input type="text" id="ip-address"
+        name="ip-address" class="net-address" size="16"
+        value="{{interfaces[0].ip}}"></input></td>
+  </tr>
+  <tr>
+    <td class="label-column">Subnet mask</td>
+    <td class="value-column"><input type="text" id="ip-subnet-mask"
+        name="ip-subnet-mask" class="net-address" size="16"
+        value="{{interfaces[0].subnet_mask}}"></input></td>
+  </tr>
+  <tr>
+    <td class="label-column">Router</td>
+    <td class="value-column"><input type="text" id="ip-gateway"
+        name="ip-gateway" class="net-address" size="16"
+        value="{{interfaces[0].gateway}}"></input></td>
+  </tr>
+</table>
+
+{# end for each interface #}
+
+{% endblock %}
+
+
+{% block page_footer_scripts %}
+<script type="text/javascript" src="/static/js/jquery.mask.min.js"></script>
+<script type="text/javascript">
+
+$(document).ready(function() {
+
+    // Mask IP inputs
+    $('.net-address').mask('099.099.099.099', {
+        placeholder: "___.___.___.___",
+          onKeyPress: function(cep, event, currentField, options) {
+            console.log();
+        }
+    });
+
+    // Map server values to checkbox states
+    $("input:checkbox").each( function() {
+      if( $(this).data('checked') ) {
+        $(this).prop('checked', true);
+      }
+    });
+
+});
+</script>
+{% endblock %}
