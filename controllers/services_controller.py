@@ -9,11 +9,11 @@ class Services(object):
         # self.augtool = augtool
 
     def is_vnc_running(self):
-        ps = Popen('systemctl status x11vnc | grep inactive', shell=True, stdout=PIPE)
+        ps = Popen('systemctl status x11vnc | grep "active (running)"', shell=True, stdout=PIPE)
         output = ps.stdout.read()
         ps.stdout.close()
         ps.wait()
-        return output == ""
+        return output != ""
 
     def enable_vnc(self):
         call(['systemctl','enable','x11vnc'])
@@ -26,11 +26,11 @@ class Services(object):
         pass
 
     def is_ssh_running(self):
-        ps = Popen('systemctl status ssh | grep inactive', shell=True, stdout=PIPE)
+        ps = Popen('systemctl status ssh | grep "active (running)"', shell=True, stdout=PIPE)
         output = ps.stdout.read()
         ps.stdout.close()
         ps.wait()
-        return output == ""
+        return output != ""
 
     def enable_ssh(self):
         call(['systemctl','enable','ssh'])

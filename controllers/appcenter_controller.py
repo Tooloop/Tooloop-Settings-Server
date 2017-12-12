@@ -61,11 +61,10 @@ class AppCenter(object):
         self.available_apps = []
         self.check_available_apps()
         self.installed_app_definition = self.app_definition_from_bundle(self.root_path+'/installed_app')
+        self.installed_app_controller = None
 
         if not self.installed_app_definition:
             return
-
-        self.installed_app_controller = None
 
         # import settings controller
         if self.installed_app_definition.has_controller:
