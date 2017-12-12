@@ -5,7 +5,7 @@
 
   <tr><td colspan="2"><h2>Network Services</h2></td></tr>
 
-  <!-- <tr>
+  <tr>
     <td class="label-column">VNC server</td>
     <td class="value-column">
       <div>
@@ -13,7 +13,7 @@
         <label for="vnc-switch">on / off</label>
       </div>
     </td>
-  </tr> -->
+  </tr>
   <tr>
     <td class="label-column">SSH server</td>
     <td class="value-column">
@@ -23,25 +23,7 @@
       </div>
     </td>
   </tr>
-  <!-- <tr>
-    <td class="label-column">Auto network recognition</td>
-    <td class="value-column">
-      <div>
-        <input type="checkbox" id="avahi-switch" name="avahi-switch" class="switch"{% if services.avahi%}checked{% endif %} disabled/>
-        <label for="avahi-switch">on / off</label>
-      </div>
-    </td>
-  </tr> -->
-  <!-- <tr>
-    <td class="label-column">Remote configuration</td>
-    <td class="value-column">
-      <div>
-        <input type="checkbox" id="settings-server-switch" name="settings-server-switch" class="switch"{% if services.remote_configuration%}checked{% endif %} disabled/>
-        <label for="settings-server-switch">on / off</label>
-        <span class="hint" style="margin-left:1em;">Use this settings server from remote</span>
-      </div>
-    </td>
-  </tr> -->
+  
 
   <tr><td colspan="2"><h2>Tools</h2></td></tr>
   <tr>
@@ -50,15 +32,6 @@
       <div>
         <input type="checkbox" id="screenshots-switch" name="screenshots-switch" class="switch"{% if services.screenshot_service%}checked{% endif %}/>
         <label for="screenshots-switch">on / off</label><br/>
-        {% if false %}
-        <p>
-          <input type="number" value="<!--#call lifetime_screenshots-->" style="width: 2em;" id="lifetime-screenshots" name="lifetime-screenshots"/>
-          <label for="lifetime-screenshots">days to keep full screenshots</label>
-
-          <input type="number" value="<!--#call lifetime_thumbnails-->" style="width: 2em;" id="lifetime-thumbnails" name="lifetime-thumbnails"/>
-          <label for="lifetime-thumbnails">days to keep thumbnails</label>
-        </p>
-        {% endif %}
       </div>
     </td>
   </tr>

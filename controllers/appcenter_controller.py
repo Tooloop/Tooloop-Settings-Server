@@ -61,6 +61,10 @@ class AppCenter(object):
         self.available_apps = []
         self.check_available_apps()
         self.installed_app_definition = self.app_definition_from_bundle(self.root_path+'/installed_app')
+
+        if not self.installed_app_definition:
+            return
+
         self.installed_app_controller = None
 
         # import settings controller
@@ -99,7 +103,10 @@ class AppCenter(object):
 
 
     def app_definition_from_bundle(self, bundle_path):
-        # TODO: handle empty folder (= no app installed)
+
+        if not isfile(bundle_path+"/app.definition"):
+            return None
+
         has_controller = isfile(bundle_path+'/controller.py')
         has_settings = isfile(bundle_path+'/settings.html')
         has_widget = isfile(bundle_path+'/widget.html')

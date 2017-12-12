@@ -61,21 +61,21 @@ class Services(object):
     def is_screenshot_service_running(self):
         crontab = CronTab(user='tooloop')
         for job in crontab:
-            if job.command == 'env DISPLAY=:0.0 /opt/tooloop/scripts/screenshot.sh' and job.is_enabled():
+            if job.command == 'env DISPLAY=:0.0 /opt/tooloop/scripts/tooloop-screenshot' and job.is_enabled():
                 return True
         return False
 
     def enable_screenshot_service(self):
         crontab = CronTab(user='tooloop')
         for job in crontab:
-            if job.command == 'env DISPLAY=:0.0 /opt/tooloop/scripts/screenshot.sh' and not job.is_enabled():
+            if job.command == 'env DISPLAY=:0.0 /opt/tooloop/scripts/tooloop-screenshot' and not job.is_enabled():
                 job.enable()
         crontab.write()
 
     def disable_screenshot_service(self):
         crontab = CronTab(user='tooloop')
         for job in crontab:
-            if job.command == 'env DISPLAY=:0.0 /opt/tooloop/scripts/screenshot.sh' and job.is_enabled():
+            if job.command == 'env DISPLAY=:0.0 /opt/tooloop/scripts/tooloop-screenshot' and job.is_enabled():
                 job.enable(False)
         crontab.write()
 
