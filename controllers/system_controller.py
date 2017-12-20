@@ -68,10 +68,22 @@ class System(object):
         }
 
     def get_cpu(self):
-        # RASPBERRY PI
-        # temperature = float(os.popen('cat /sys/class/thermal/thermal_zone0/temp').readline().strip())/1000
-        # INTEL
-        temperature = float(os.popen('cat /sys/class/thermal/thermal_zone1/temp').readline().strip())/1000
+        # get all thermal zones, of the cpu
+        thermal_zones = []
+        for name in os.listdir('/sys/class/thermal'):
+            if 'thermal_zone' in name:
+                full_path = os.path.join('/sys/class/thermal', name)
+                if os.path.isdir(full_path):
+                    thermal_zones.append(full_path)
+
+        temperature = 0
+        if thermal_zones:
+            # get the temperatures and sum them up
+            for zone in thermal_zones:
+                temperature += float(os.popen('cat '+zone).readline().strip())/1000
+            # calculate the average
+            temperature /= len(thermal_zones)
+
         usage = self.cpu_load.get_cpu_load()
         return {
             'timestamp': time_to_ISO_string(time.gmtime()),

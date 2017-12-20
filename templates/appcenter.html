@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
+
+{% if installed_app %}
 <div id="active-app-area" class="area">
-  <div id="active-app-info">
     <img src="/app/preview_image.jpg" />
     <p>
       Version {{installed_app.version}}<br/>
@@ -20,6 +21,7 @@
     <span>{{installed_app.description}}</span>
   </div>
 </div>
+{% endif %}
 
 <div id="appcenter-area" class="area">
 
