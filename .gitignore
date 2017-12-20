@@ -1,3 +1,4 @@
 *.pyc
-installed_app/*.*
+installed_app/*
+!installed_app/.gitkeep
 static/css/.sass-cache
