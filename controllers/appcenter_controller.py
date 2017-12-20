@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from flask import Flask, render_template
-from os import listdir, rename
-from os.path import isdir, isfile
+from os import listdir, rename, mkdir
+from os.path import isdir, isfile, join
 from subprocess import call
 import json
 from utils.file_utils import *
@@ -11,14 +11,27 @@ from shutil import copy, copytree, rmtree
 
 
 class AppDefinition(object):
-    def __init__(self, name, description, media, version, last_updated, license, price_euro, category, tags, developer, support_url, compatibility, has_controller=False, has_settings=False, has_widget=False):
+    def __init__(self, 
+                 name=None,
+                 description=None,
+                 media=None,
+                 version=None,
+                 last_updated=None,
+                 license=None,
+                 category=None,
+                 tags=None,
+                 developer=None,
+                 support_url=None,
+                 compatibility=None,
+                 has_controller=False, 
+                 has_settings=False, 
+                 has_widget=False):
         self.name = name
         self.description = description
         self.media = media
         self.version = version
         self.last_updated = last_updated
         self.license = license
-        self.price_euro = price_euro
         self.category = category
         self.tags = tags
         self.developer = developer
@@ -36,7 +49,6 @@ class AppDefinition(object):
             'version': self.version,
             'last_updated': self.last_updated,
             'license': self.license,
-            'price_euro': self.price_euro,
             'category': self.category,
             'tags': self.tags,
             'developer': self.developer,
@@ -95,9 +107,10 @@ class AppCenter(object):
         self.available_apps = []
         directory = listdir(self.app_path)
         for app in directory:
-            if isfile(self.app_path+app+'/bundle/app.definition'):
-                app_definition = self.app_definition_from_bundle(self.app_path+app+'/bundle')
-                self.available_apps.append(app_definition)
+            if isfile(self.app_path+app+'/app.definition'):
+                app_definition = self.app_definition_from_bundle(self.app_path+app)
+                if app_definition:
+                    self.available_apps.append(app_definition)
         self.available_apps.sort(key=lambda x : x.name)
 
 
@@ -110,74 +123,95 @@ class AppCenter(object):
         has_settings = isfile(bundle_path+'/settings.html')
         has_widget = isfile(bundle_path+'/widget.html')
 
-        with open(bundle_path+"/app.definition") as json_data:
-            d = json.load(json_data)
-            return AppDefinition(
-                d['name'],
-                d['description'],
-                d['media'],
-                d['version'],
-                d['last_updated'],
-                d['license'],
-                d['price_euro'],
-                d['category'],
-                d['tags'],
-                d['developer'],
-                d['support_url'],
-                d['compatibility'],
-                has_controller,
-                has_settings,
-                has_widget
-            )
+        try:
+            with open(bundle_path+"/app.definition") as json_data:
+                d = json.load(json_data)
+                app_definition = AppDefinition()
+                if d['name']: app_definition.name = d['name']
+                if d['description']: app_definition.description = d['description']
+                if d['media']: app_definition.media = d['media']
+                if d['version']: app_definition.version = d['version']
+                if d['last_updated']: app_definition.last_updated = d['last_updated']
+                if d['license']: app_definition.license = d['license']
+                if d['category']: app_definition.category = d['category']
+                if d['tags']: app_definition.tags = d['tags']
+                if d['developer']: app_definition.developer = d['developer']
+                if d['support_url']: app_definition.support_url = d['support_url']
+                if d['compatibility']: app_definition.compatibility = d['compatibility']
+                app_definition.has_controller = has_controller
+                app_definition.has_settings = has_settings
+                app_definition.has_widget = has_widget
+
+                return app_definition
+                
+        except ValueError as e:
+            print "Could not read app.definition from bundle " + bundle_path
+            return None
+
 
 
     def install(self, app):
-        # TODO: try catch backup
         if isdir(self.app_path + app):
-            # stopp the running presentation
+
+            # stop running presentation
             self.presentation.stop()
 
-            # make backup
-            # - /assets/presentation
-            # - self.root_path + '/installed_app/
-            
             # uninstall old app
             call(['/bin/sh', self.root_path + '/installed_app/uninstall.sh'])
+
+            # delete old backup
+            if isdir(self.root_path+'/installed_app_BAK'):
+                rmtree(self.root_path+'/installed_app_BAK')
+
+            if isdir('/assets/presentation_BAK'):
+                rmtree('/assets/presentation_BAK')
             
-            # delete old app
-            rename(self.root_path+'/installed_app', self.root_path+'/installed_app_BAK')
-            rename('/assets/presentation', '/assets/presentation_BAK')
+            # backup old app
+            if isdir(self.root_path+'/installed_app'):
+                rename(self.root_path+'/installed_app', self.root_path+'/installed_app_BAK')
+                mkdir(self.root_path+'/installed_app')
+            
+            if isdir('/assets/presentation'):
+                rename('/assets/presentation', '/assets/presentation_BAK')
+
 
             # install new app
-            call(['/bin/sh', self.app_path+app+'/install.sh'])
+            call(['/bin/sh', self.app_path+app+'/scripts/install.sh'])
 
-            # copy bundle stuff to installed_app folder
-            copytree(self.app_path+app+'/bundle', self.root_path+'/installed_app')
+            # copy bundle stuff
+            self.copy_files(self.app_path+app, self.root_path+'/installed_app')
+            self.copy_files(self.app_path+app+'/scripts', self.root_path+'/installed_app')
+            self.copy_files(self.app_path+app+'/settings', self.root_path+'/installed_app')
+            self.copy_files(self.app_path+app+'/data', '/assets/data')
 
-            # copy uninstall script
-            copy(self.app_path+app+'/uninstall.sh', self.root_path + '/installed_app/uninstall.sh')
-
-            # copy settings template
-            copy(self.app_path+app+'/settings.html', self.root_path + '/templates/')
-
-            # copy data
-            # if isdir(self.app_path+app+'/data'):
-                # TODO: copy_contents( self.app_path+app+'/data/*', '/assets/data/')
             # copy presentation
             copytree(self.app_path+app+'/presentation', '/assets/presentation/')
 
             # delete backup
-            rmtree(self.root_path+'/installed_app_BAK')
-            rmtree('/assets/presentation_BAK')
-            # TODO: in case of an axception roll back
+            # TODO: in case of an axception roll back and re-install old app
+            if isdir(self.root_path+'/installed_app_BAK'):
+                rmtree(self.root_path+'/installed_app_BAK')
+
+            if isdir(self.root_path+'/assets/presentation_BAK'):
+                rmtree('/assets/presentation_BAK')
+                
             # restart presentation
             self.presentation.start()
 
             # get information and update self.installed_app_definition
             if isfile(self.app_path+app+'/bundle/app.definition'):
-                self.installed_app_definition = self.app_definition_from_bundle(self.app_path+app+'/bundle')
+                self.installed_app_definition = self.app_definition_from_bundle(self.app_path+app)
+
+            # Todo: chown everything to tooloop user
 
             return self.installed_app_definition
+
+    def copy_files(self, src_dir, dest_dir):
+        for file in listdir(src_dir):
+            full_file_name = join(src_dir, file)
+            if isfile(full_file_name):
+                copy(full_file_name, dest_dir)
+                
 
     def uninstall(self):
         pass

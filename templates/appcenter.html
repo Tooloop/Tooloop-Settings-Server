@@ -14,7 +14,6 @@
       <button onclick="document.location='/appsettings';">Settings</button>
     </p>
     {% endif %}
-  </div>
   <div id="active-app-description">
     <span class="current-app">Currently installed</span>
     <h1>{{installed_app.name}}</h1>
@@ -27,7 +26,7 @@
 
   {% for app in available_apps %}
   <div class="app">
-    <img class="preview-image" src="/appcenter/{{app.name}}/bundle/preview_image.jpg" />
+    <img class="preview-image" src="/appcenter/{{app.name}}/preview_image.jpg" />
     <div class="info-area">
       <div class="info">
         <strong class="name">{{app.name}}</strong>

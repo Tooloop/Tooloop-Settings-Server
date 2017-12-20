@@ -67,6 +67,7 @@ def render_network():
 
 @app.route("/appcenter")
 def render_appcenter():
+    appcenter.check_available_apps()
     return render_template('appcenter.html', page='appcenter', installed_app = appcenter.get_installed_app(),
         available_apps = appcenter.get_availeble_apps()
     )
@@ -98,6 +99,7 @@ def serve_installed_app(filename):
 
 @app.route('/appcenter/<path:filename>')
 def serve_available_apps(filename):
+    print '/assets/apps/'+filename
     return send_from_directory('/assets/apps/', filename)
 
 
@@ -241,7 +243,10 @@ def check_available_apps():
 @app.route('/tooloop/api/v1.0/appcenter/install/<string:name>', methods=['GET'])
 def install_app(name):
     appcenter.install(name)
-    return jsonify(appcenter.get_installed_app().to_dict())
+    try:
+        return jsonify(appcenter.get_installed_app().to_dict())
+    except Exception as e:
+        abort(500)
 
 
 # services
