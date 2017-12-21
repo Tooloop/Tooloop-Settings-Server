@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from flask import Flask, render_template
-from os import listdir, rename, mkdir
+from os import listdir, rename, mkdir, chown, utime
 from os.path import isdir, isfile, join
+import pwd
+import grp
 from subprocess import call
 import json
 from utils.file_utils import *
@@ -152,6 +154,7 @@ class AppCenter(object):
 
     def install(self, app):
         if isdir(self.app_path + app):
+            # TODO: in case of an exception roll back and re-install old app
 
             # stop running presentation
             self.presentation.stop()
@@ -183,28 +186,32 @@ class AppCenter(object):
             self.copy_files(self.app_path+app+'/scripts', self.root_path+'/installed_app')
             self.copy_files(self.app_path+app+'/settings', self.root_path+'/installed_app')
             self.copy_files(self.app_path+app+'/data', '/assets/data')
+            self.touch(self.root_path+'/installed_app/__init__.py')
 
             # copy presentation
             copytree(self.app_path+app+'/presentation', '/assets/presentation/')
 
             # delete backup
-            # TODO: in case of an axception roll back and re-install old app
             if isdir(self.root_path+'/installed_app_BAK'):
                 rmtree(self.root_path+'/installed_app_BAK')
 
             if isdir(self.root_path+'/assets/presentation_BAK'):
-                rmtree('/assets/presentation_BAK')
-                
+                rmtree('/assets/presentation_BAK')    
+
+            # get information and update self.installed_app_definition
+            if isfile(self.app_path+app+'/app.definition'):
+                self.installed_app_definition = self.app_definition_from_bundle(self.app_path+app)
+
+            # chown everything to tooloop user
+            self.chown_recursive(self.app_path, 'tooloop', 'tooloop')
+            self.chown_recursive('/assets/data', 'tooloop', 'tooloop')
+            self.chown_recursive('/assets/presentation', 'tooloop', 'tooloop')
+
             # restart presentation
             self.presentation.start()
 
-            # get information and update self.installed_app_definition
-            if isfile(self.app_path+app+'/bundle/app.definition'):
-                self.installed_app_definition = self.app_definition_from_bundle(self.app_path+app)
-
-            # Todo: chown everything to tooloop user
-
             return self.installed_app_definition
+
 
     def copy_files(self, src_dir, dest_dir):
         for file in listdir(src_dir):
@@ -212,6 +219,19 @@ class AppCenter(object):
             if isfile(full_file_name):
                 copy(full_file_name, dest_dir)
                 
+    def chown_recursive(self, path, user, group):
+        uid = pwd.getpwnam(user).pw_uid
+        gid = grp.getgrnam(group).gr_gid
+        os.chown(path, uid, gid)
+        for root, dirs, files in os.walk(path):
+            for name in dirs:
+                os.chown(os.path.join(root, name), uid, gid)
+            for name in files:
+                os.chown(os.path.join(root, name), uid, gid)
+
+    def touch(self, filename, times=None):
+        with open(filename, 'a'):
+            os.utime(filename, times)
 
     def uninstall(self):
         pass

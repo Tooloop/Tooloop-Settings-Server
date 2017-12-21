@@ -99,7 +99,6 @@ def serve_installed_app(filename):
 
 @app.route('/appcenter/<path:filename>')
 def serve_available_apps(filename):
-    print '/assets/apps/'+filename
     return send_from_directory('/assets/apps/', filename)
 
 
