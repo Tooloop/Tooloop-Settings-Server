@@ -629,6 +629,7 @@ label {
 }
 
 input[type=text] ~ label,
+input[type=url] ~ label,
 input[type=number] ~ label {
   margin-left: 0.3em;
   margin-right: 1.2em;
