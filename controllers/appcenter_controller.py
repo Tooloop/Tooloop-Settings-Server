@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from flask import Flask, render_template
+from flask import Flask, render_template, abort
 from os import listdir, rename, mkdir, chown, utime
 from os.path import isdir, isfile, join
 import pwd
@@ -23,7 +23,7 @@ class AppDefinition(object):
                  category=None,
                  tags=None,
                  developer=None,
-                 support_url=None,
+                 homepage=None,
                  compatibility=None,
                  has_controller=False, 
                  has_settings=False, 
@@ -37,7 +37,7 @@ class AppDefinition(object):
         self.category = category
         self.tags = tags
         self.developer = developer
-        self.support_url = support_url
+        self.homepage = homepage
         self.compatibility = compatibility
         self.has_controller = has_controller
         self.has_settings = has_settings
@@ -54,7 +54,7 @@ class AppDefinition(object):
             'category': self.category,
             'tags': self.tags,
             'developer': self.developer,
-            'support_url': self.support_url,
+            'homepage': self.homepage,
             'compatibility': self.compatibility,
             'has_controller': self.has_controller,
             'has_settings': self.has_settings,
@@ -87,11 +87,12 @@ class AppCenter(object):
             self.installed_app_controller = InstalledApp(flask)
 
         # add settings page route
-        if self.installed_app_definition.has_settings:
-            @flask.route("/appsettings")
-            def render_appsettings():
-                return render_template('settings.html', page='appsettings', installed_app = self.installed_app_definition, app_controller = self.installed_app_controller
-            )
+        @flask.route("/appsettings")
+        def render_appsettings():
+            if self.installed_app_definition.has_settings:
+                return render_template('settings.html', page='appsettings', installed_app = self.installed_app_definition, app_controller = self.installed_app_controller)
+            else:
+                abort(404)
 
 
     def get_installed_app(self):
@@ -99,7 +100,6 @@ class AppCenter(object):
 
     def get_installed_app_controller(self):
         return self.installed_app_controller
-
 
     def get_availeble_apps(self):
         return self.available_apps
@@ -109,8 +109,8 @@ class AppCenter(object):
         self.available_apps = []
         directory = listdir(self.app_path)
         for app in directory:
-            if isfile(self.app_path+app+'/app.definition'):
-                app_definition = self.app_definition_from_bundle(self.app_path+app)
+            if isfile(self.app_path+app+'/bundle/app.definition'):
+                app_definition = self.app_definition_from_bundle(self.app_path+app+'/bundle')
                 if app_definition:
                     self.available_apps.append(app_definition)
         self.available_apps.sort(key=lambda x : x.name)
@@ -121,34 +121,28 @@ class AppCenter(object):
         if not isfile(bundle_path+"/app.definition"):
             return None
 
-        has_controller = isfile(bundle_path+'/controller.py')
-        has_settings = isfile(bundle_path+'/settings.html')
-        has_widget = isfile(bundle_path+'/widget.html')
+        app_definition = AppDefinition()
 
-        try:
-            with open(bundle_path+"/app.definition") as json_data:
-                d = json.load(json_data)
-                app_definition = AppDefinition()
-                if d['name']: app_definition.name = d['name']
-                if d['description']: app_definition.description = d['description']
-                if d['media']: app_definition.media = d['media']
-                if d['version']: app_definition.version = d['version']
-                if d['last_updated']: app_definition.last_updated = d['last_updated']
-                if d['license']: app_definition.license = d['license']
-                if d['category']: app_definition.category = d['category']
-                if d['tags']: app_definition.tags = d['tags']
-                if d['developer']: app_definition.developer = d['developer']
-                if d['support_url']: app_definition.support_url = d['support_url']
-                if d['compatibility']: app_definition.compatibility = d['compatibility']
-                app_definition.has_controller = has_controller
-                app_definition.has_settings = has_settings
-                app_definition.has_widget = has_widget
+        with open(bundle_path+"/app.definition") as json_data:
+            d = json.load(json_data)
 
-                return app_definition
-                
-        except ValueError as e:
-            print "Could not read app.definition from bundle " + bundle_path
-            return None
+            app_definition.name = d.get('name', None)
+            app_definition.description = d.get('description', None)
+            app_definition.media = d.get('media', [])
+            app_definition.version = d.get('version', None)
+            app_definition.last_updated = d.get('last_updated', None)
+            app_definition.license = d.get('license', None)
+            app_definition.category = d.get('category', None)
+            app_definition.tags = d.get('tags', None)
+            app_definition.developer = d.get('developer', None)
+            app_definition.homepage = d.get('homepage', None)
+            app_definition.compatibility = d.get('compatibility', None)
+
+        app_definition.has_controller = isfile(bundle_path+'/controller.py')
+        app_definition.has_settings = isfile(bundle_path+'/settings.html')
+        app_definition.has_widget = isfile(bundle_path+'/widget.html')
+
+        return app_definition
 
 
 
@@ -160,47 +154,35 @@ class AppCenter(object):
             self.presentation.stop()
 
             # uninstall old app
-            call(['/bin/sh', self.root_path + '/installed_app/uninstall.sh'])
+            if isfile(self.root_path+'/installed_app/uninstall.sh'):
+                call(['/bin/sh', self.root_path + '/installed_app/uninstall.sh'])
 
-            # delete old backup
-            if isdir(self.root_path+'/installed_app_BAK'):
-                rmtree(self.root_path+'/installed_app_BAK')
-
-            if isdir('/assets/presentation_BAK'):
-                rmtree('/assets/presentation_BAK')
-            
-            # backup old app
+            # delete old bundle
             if isdir(self.root_path+'/installed_app'):
-                rename(self.root_path+'/installed_app', self.root_path+'/installed_app_BAK')
-                mkdir(self.root_path+'/installed_app')
-            
-            if isdir('/assets/presentation'):
-                rename('/assets/presentation', '/assets/presentation_BAK')
+                rmtree(self.root_path+'/installed_app')
 
-
-            # install new app
-            call(['/bin/sh', self.app_path+app+'/scripts/install.sh'])
+            # install new app dependencies
+            if isfile(self.app_path+app+'/bundle/install.sh'):
+                call(['/bin/sh', self.app_path+app+'/bundle/install.sh'])
 
             # copy bundle stuff
-            self.copy_files(self.app_path+app, self.root_path+'/installed_app')
-            self.copy_files(self.app_path+app+'/scripts', self.root_path+'/installed_app')
-            self.copy_files(self.app_path+app+'/settings', self.root_path+'/installed_app')
-            self.copy_files(self.app_path+app+'/data', '/assets/data')
-            self.touch(self.root_path+'/installed_app/__init__.py')
+            copytree(self.app_path+app+'/bundle', self.root_path+'/installed_app')
+
+            # copy data stuff
+            if isdir(self.app_path+app+'/data'):
+                if not isdir('/assets/data'):
+                    copytree(self.app_path+app+'/data', '/assets/data')
+                else:
+                    self.copytree(self.app_path+app+'/data', '/assets/data')
+
+            # make Python aware of controller module
+            if isfile(self.root_path+'/installed_app/controller.py'):
+                self.touch(self.root_path+'/installed_app/__init__.py')
 
             # copy presentation
-            copytree(self.app_path+app+'/presentation', '/assets/presentation/')
-
-            # delete backup
-            if isdir(self.root_path+'/installed_app_BAK'):
-                rmtree(self.root_path+'/installed_app_BAK')
-
-            if isdir(self.root_path+'/assets/presentation_BAK'):
-                rmtree('/assets/presentation_BAK')    
-
-            # get information and update self.installed_app_definition
-            if isfile(self.app_path+app+'/app.definition'):
-                self.installed_app_definition = self.app_definition_from_bundle(self.app_path+app)
+            if isdir('/assets/presentation'):
+                rmtree('/assets/presentation')
+            copytree(self.app_path+app+'/presentation', '/assets/presentation')
 
             # chown everything to tooloop user
             self.chown_recursive(self.app_path, 'tooloop', 'tooloop')
@@ -210,7 +192,11 @@ class AppCenter(object):
             # restart presentation
             self.presentation.start()
 
+            # get information and update self.installed_app_definition
+            self.installed_app_definition = self.app_definition_from_bundle(self.root_path+'/installed_app')
+
             return self.installed_app_definition
+
 
 
     def copy_files(self, src_dir, dest_dir):
@@ -218,7 +204,16 @@ class AppCenter(object):
             full_file_name = join(src_dir, file)
             if isfile(full_file_name):
                 copy(full_file_name, dest_dir)
-                
+
+    def copytree(self, src, dst, symlinks=False, ignore=None):
+        for item in os.listdir(src):
+            s = os.path.join(src, item)
+            d = os.path.join(dst, item)
+            if os.path.isdir(s):
+                shutil.copytree(s, d, symlinks, ignore)
+            else:
+                shutil.copy2(s, d)
+
     def chown_recursive(self, path, user, group):
         uid = pwd.getpwnam(user).pw_uid
         gid = grp.getgrnam(group).gr_gid

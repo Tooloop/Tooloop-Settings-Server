@@ -7,7 +7,7 @@
     <img src="/app/preview_image.jpg" />
     <p>
       Version {{installed_app.version}}<br/>
-      By <a href="{{installed_app.support_url}}">{{installed_app.developer}}</a>
+      By <a href="{{installed_app.homepage}}">{{installed_app.developer}}</a>
     </p>
     {% if installed_app.has_settings %}
     <p>
@@ -26,11 +26,11 @@
 
   {% for app in available_apps %}
   <div class="app">
-    <img class="preview-image" src="/appcenter/{{app.name}}/preview_image.jpg" />
+    <img class="preview-image" src="/appcenter/{{app.name}}/bundle/preview_image.jpg" />
     <div class="info-area">
       <div class="info">
         <strong class="name">{{app.name}}</strong>
-        <span class="developer">By <a href="{{app.support_url}}">{{app.developer}}</a></span>
+        <span class="developer">By <a href="{{app.homepage}}">{{app.developer}}</a></span>
         <div class="description">{{app.description}}</div>
         <button onclick="install('{{app.name}}')">Install</button>
         <button onclick="">Details</button>
