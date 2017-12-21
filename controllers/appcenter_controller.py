@@ -23,7 +23,7 @@ class AppDefinition(object):
                  category=None,
                  tags=None,
                  developer=None,
-                 support_url=None,
+                 homepage=None,
                  compatibility=None,
                  has_controller=False, 
                  has_settings=False, 
@@ -37,7 +37,7 @@ class AppDefinition(object):
         self.category = category
         self.tags = tags
         self.developer = developer
-        self.support_url = support_url
+        self.homepage = homepage
         self.compatibility = compatibility
         self.has_controller = has_controller
         self.has_settings = has_settings
@@ -54,7 +54,7 @@ class AppDefinition(object):
             'category': self.category,
             'tags': self.tags,
             'developer': self.developer,
-            'support_url': self.support_url,
+            'homepage': self.homepage,
             'compatibility': self.compatibility,
             'has_controller': self.has_controller,
             'has_settings': self.has_settings,
@@ -138,7 +138,7 @@ class AppCenter(object):
                 if d['category']: app_definition.category = d['category']
                 if d['tags']: app_definition.tags = d['tags']
                 if d['developer']: app_definition.developer = d['developer']
-                if d['support_url']: app_definition.support_url = d['support_url']
+                if d['homepage']: app_definition.homepage = d['homepage']
                 if d['compatibility']: app_definition.compatibility = d['compatibility']
                 app_definition.has_controller = has_controller
                 app_definition.has_settings = has_settings
