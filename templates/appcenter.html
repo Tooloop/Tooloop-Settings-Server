@@ -5,7 +5,7 @@
 {% if installed_app %}
 <div id="active-app-area" class="area">
     
-    <img src="/app/preview_image.jpg" />
+    <img src="/app/preview_image.jpg?{{time_stamp}}" />
     <div id="active-app-description">
         <span class="current-app">Currently installed</span>
         <h1>{{installed_app.name}}</h1>

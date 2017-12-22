@@ -69,7 +69,8 @@ def render_network():
 def render_appcenter():
     appcenter.check_available_apps()
     return render_template('appcenter.html', page='appcenter', installed_app = appcenter.get_installed_app(),
-        available_apps = appcenter.get_availeble_apps()
+        available_apps = appcenter.get_availeble_apps(),
+        time_stamp = time.time()
     )
 
 @app.route("/services")
