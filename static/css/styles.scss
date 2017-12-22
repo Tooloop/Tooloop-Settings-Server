@@ -648,48 +648,48 @@ input.switch:empty {
   display: none;
 }
 input.switch:empty ~ label {
-	position: relative;
-	float: left;
-	line-height: 1.6em;
-	text-indent: 4.5em;
-	margin: 0.2em 0;
-	cursor: pointer;
-	-webkit-user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
-	user-select: none;
+  position: relative;
+  float: left;
+  line-height: 1.6em;
+  text-indent: 4.5em;
+  margin: 0.2em 0;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 input.switch:empty ~ label:before,
 input.switch:empty ~ label:after
 {
-	position: absolute;
-	display: block;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	content: ' ';
-	width: calc(3.5em + 1px);
-	background-color: $gray5;
-	-webkit-transition: all 100ms ease-out;
-	transition: all 100ms ease-out;
+  position: absolute;
+  display: block;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  content: ' ';
+  width: calc(3.5em + 1px);
+  background-color: $gray5;
+  -webkit-transition: all 100ms ease-out;
+  transition: all 100ms ease-out;
   border-radius: 3px;
 }
 
 
 input.switch:empty ~ label:after
 {
-	width: 1.5em;
-	top: 1px;
-	bottom: 1px;
-	margin-left: 2em;
-	background-color: #fff;
-	border-radius: 2px;
-	box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  width: 1.5em;
+  top: 1px;
+  bottom: 1px;
+  margin-left: 2em;
+  background-color: #fff;
+  border-radius: 2px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 input.switch:checked ~ label:before
 {
-	background-color: $pink;
+  background-color: $pink;
 }
 
 input.switch:checked ~ label:after
@@ -722,9 +722,10 @@ input.switch:checked ~ label:after
 }
 
 #active-app-area img {
-  // box-shadow: 0 3px 3px rgba(0,0,0,0.2);
   border: 1px solid rgba(255,255,255,0.3);
-  width: 100%;
+  float: left;
+  width: calc(33.33333% - 3em);
+  margin: 1em;
 }
 
 #active-app-area .current-app {
@@ -739,6 +740,7 @@ input.switch:checked ~ label:after
 #active-app-area h1 {
   text-align: left;
   color: $blue;
+  margin: 0.5em 0 0 0;
 }
 
 #appcenter-area .app {

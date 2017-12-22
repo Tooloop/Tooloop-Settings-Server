@@ -4,40 +4,38 @@
 
 {% if installed_app %}
 <div id="active-app-area" class="area">
+    
     <img src="/app/preview_image.jpg" />
-    <p>
-      Version {{installed_app.version}}<br/>
-      By <a href="{{installed_app.homepage}}">{{installed_app.developer}}</a>
-    </p>
-    {% if installed_app.has_settings %}
-    <p>
-      <button onclick="document.location='/appsettings';">Settings</button>
-    </p>
-    {% endif %}
-  <div id="active-app-description">
-    <span class="current-app">Currently installed</span>
-    <h1>{{installed_app.name}}</h1>
-    <span>{{installed_app.description}}</span>
+    <div id="active-app-description">
+        <span class="current-app">Currently installed</span>
+        <h1>{{installed_app.name}}</h1>
+        <p>
+            Version {{installed_app.version}}<br/>
+            By <a href="{{installed_app.homepage}}">{{installed_app.developer}}</a>
+        </p>
+        {% if installed_app.has_settings %}
+        <p><button onclick="document.location='/appsettings';">Settings</button></p>
+        {% endif %}
+        <span>{{installed_app.description}}</span>
   </div>
 </div>
 {% endif %}
 
 <div id="appcenter-area" class="area">
-
-  {% for app in available_apps %}
-  <div class="app">
-    <img class="preview-image" src="/appcenter/{{app.name}}/bundle/preview_image.jpg" />
-    <div class="info-area">
-      <div class="info">
-        <strong class="name">{{app.name}}</strong>
-        <span class="developer">By <a href="{{app.homepage}}">{{app.developer}}</a></span>
-        <div class="description">{{app.description}}</div>
-        <button onclick="install('{{app.name}}')">Install</button>
-        <button onclick="">Details</button>
-      </div>
+    {% for app in available_apps %}
+    <div class="app">
+        <img class="preview-image" src="/appcenter/{{app.name}}/bundle/preview_image.jpg" />
+        <div class="info-area">
+            <div class="info">
+                <strong class="name">{{app.name}}</strong>
+                <span class="developer">By <a href="{{app.homepage}}">{{app.developer}}</a></span>
+                <div class="description">{{app.description}}</div>
+                <button onclick="install('{{app.name}}')">Install</button>
+                <button onclick="">Details</button>
+            </div>
+        </div>
     </div>
-  </div>
-  {% endfor %}
+    {% endfor %}
 </div>
 {% endblock %}
 
@@ -45,15 +43,15 @@
 {% block page_footer_scripts %}
 <script type="text/javascript">
 
-$(document).ready(function() {
-});
+    $(document).ready(function() {
+    });
 
-var install = function(name) {
-  $.ajax({
-    url: "/tooloop/api/v1.0/appcenter/install/"+name
-  }).done(function( data ) {
-    location.reload();
-  });
+    var install = function(name) {
+      $.ajax({
+        url: "/tooloop/api/v1.0/appcenter/install/"+name
+    }).done(function( data ) {
+        location.reload();
+    });
 }
 
 </script>
