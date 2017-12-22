@@ -26,8 +26,7 @@ class AppDefinition(object):
                  homepage=None,
                  compatibility=None,
                  has_controller=False, 
-                 has_settings=False, 
-                 has_widget=False):
+                 has_settings=False):
         self.name = name
         self.description = description
         self.media = media
@@ -41,7 +40,6 @@ class AppDefinition(object):
         self.compatibility = compatibility
         self.has_controller = has_controller
         self.has_settings = has_settings
-        self.has_widget = has_widget
 
     def to_dict(self):
         return {
@@ -58,7 +56,6 @@ class AppDefinition(object):
             'compatibility': self.compatibility,
             'has_controller': self.has_controller,
             'has_settings': self.has_settings,
-            'has_widget': self.has_widget
         }
 
 
@@ -140,7 +137,6 @@ class AppCenter(object):
 
         app_definition.has_controller = isfile(bundle_path+'/controller.py')
         app_definition.has_settings = isfile(bundle_path+'/settings.html')
-        app_definition.has_widget = isfile(bundle_path+'/widget.html')
 
         return app_definition
 

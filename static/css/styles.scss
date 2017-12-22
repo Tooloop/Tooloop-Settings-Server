@@ -206,6 +206,7 @@ body.appsettings #sidebar a.appsettings {
 }
 
 
+
 // -----------------------------------------------------------------------------
 // Settings panel (right)
 // -----------------------------------------------------------------------------
@@ -252,43 +253,9 @@ body.appsettings #sidebar a.appsettings {
   padding: 2em 1em 4em 1em;
 }
 
-
 // -----------------------------------------------------------------------------
-// Presentation area (in dashboard)
+// Cover
 // -----------------------------------------------------------------------------
-
-#presentation-area {
-  position: relative;
-  overflow: hidden;
-}
-
-#presentation-area h1 {
-  color: white;
-  text-align: left;
-  text-shadow: 0 0 10px rgba(0,0,0,0.5);
-}
-
-$background-blur: 6px;
-
-#background-image {
-  position: absolute;
-  height: calc(100% + #{4*$background-blur});
-  width: calc(100% + #{4*$background-blur});
-  background: #333;
-  background-size: cover;
-  background-position: center center;
-  filter: blur($background-blur) brightness(70%) grayscale(50%);
-  top: -2*$background-blur;
-  left: -2*$background-blur;
-}
-
-// mobile
-@media (max-width: ($max-mobile-width)) {
-  #background-image {
-    background-image: radial-gradient(#666, #333) !important;
-    filter: none;
-  }
-}
 
 
 // .close-button {
@@ -331,7 +298,7 @@ $background-blur: 6px;
 
 
 // -----------------------------------------------------------------------------
-// Settings table
+// Settings tables
 // -----------------------------------------------------------------------------
 .settings-table {
   width: 100%;
@@ -564,6 +531,7 @@ $background-blur: 6px;
   }
 }
 
+
 // -----------------------------------------------------------------------------
 // Widgets
 // -----------------------------------------------------------------------------
@@ -710,7 +678,7 @@ input.switch:checked ~ label:after
 
 
 // -----------------------------------------------------------------------------
-// App Store
+// App center
 // -----------------------------------------------------------------------------
 #active-app-area {
   background-color: #333;
