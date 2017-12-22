@@ -282,118 +282,14 @@ $background-blur: 6px;
   left: -2*$background-blur;
 }
 
-#presentation-widget,
-#screenshot {
-  margin: 1em;
-  position: relative;
-  float: left;
-  z-index: 1;
-}
-
-#screenshot {
-  width: calc(33.3333% - 2em - 2px);
-  border: 1px solid rgba(255,255,255,0.3);
-  box-shadow: 0 3px 3px rgba(0,0,0,0.2);
-}
-
-#screenshot a {
-  cursor: zoom-in;
-}
-
-#screenshot button {
-  line-height: 1em;
-  margin: 0;
-  padding: 0;
-  width: 2em;
-  position: absolute;
-  right: 0.5em;
-  top: 0.5em;
-  height: 2em;
-  background: black;
-  border: 1px solid white;
-  opacity: 0.5;
-}
-
-#screenshot::after {
-  display: none;
-  background-color: rgba(0,0,0,0.75);
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: calc(100% - 1em);
-  color: white;
-  content: "Display off";
-  text-align: center;
-  padding: 1em 0 0 0;
-}
-#screenshot.off::after {
-  display: initial;
-  content: "Display off";
-}
-#screenshot.standby::after {
-  display: initial;
-  content: "Display in standby";
-}
-#screenshot.suspend::after {
-  display: initial;
-  content: "Display in suspend";
-}
-
-#presentation-widget {
-  width: calc(66.6666% - 2em);
-}
-
-#screenshot-thumbnail {
-  width: 100%;
-  float: left;
-}
-
 // mobile
 @media (max-width: ($max-mobile-width)) {
-  #presentation-widget,
-  #screenshot {
-    width: calc(100% - 2em);
-  }
   #background-image {
     background-image: radial-gradient(#666, #333) !important;
     filter: none;
   }
 }
 
-// tablet
-@media (min-width: ($max-mobile-width+1)) and (max-width: $min-desktop-width) {
-  #presentation-widget,
-  #screenshot {
-    width: calc(50% - 2em - 1px);
-  }
-}
-
-
-#screenshot-timestamp {
-  position: absolute;
-  font-size: 0.75em;
-  bottom: 0;
-  background-color: rgba(0,0,0,0.5);
-  padding: 0.1em 1em;
-  color: white;
-  text-align: center;
-  width: calc(100% - 2em);
-}
-
-#screenshot-panel {
-  height: calc(100% - 4em);
-  width: calc(100% - 4em);
-  top: 2em;
-  left: 2em;
-  position: fixed;
-  z-index: 100;
-  display: none;
-  background-repeat: no-repeat;
-  background-size: contain;
-  background-position: center center;
-  cursor: zoom-out;
-}
 
 // .close-button {
 //   position: absolute;
@@ -500,11 +396,96 @@ $background-blur: 6px;
 
 
 // -----------------------------------------------------------------------------
-// System table
+// System panel
 // -----------------------------------------------------------------------------
+
+#screenshot {
+  margin: 4.6em 1em 0 1em;
+  position: relative;
+  float: right;
+  z-index: 1;
+}
+
+#screenshot {
+  box-shadow: 0 3px 3px rgba(0,0,0,0.2);
+  width: 33.3333%;
+}
+
+#screenshot a {
+  cursor: zoom-in;
+}
+
+#screenshot button {
+  line-height: 1em;
+  margin: 0;
+  padding: 0;
+  width: 2em;
+  position: absolute;
+  right: 0.5em;
+  top: 0.5em;
+  height: 2em;
+  background: black;
+  border: 1px solid white;
+  opacity: 0.5;
+}
+// display off status
+#screenshot::after {
+  display: none;
+  background-color: rgba(0,0,0,0.75);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 1em);
+  color: white;
+  content: "Display off";
+  text-align: center;
+  padding: 1em 0 0 0;
+}
+#screenshot.off::after {
+  display: initial;
+  content: "Display off";
+}
+#screenshot.standby::after {
+  display: initial;
+  content: "Display in standby";
+}
+#screenshot.suspend::after {
+  display: initial;
+  content: "Display in suspend";
+}
+
+#screenshot-thumbnail {
+  width: 100%;
+  float: left;
+}
+
+
+#screenshot-timestamp {
+  font-size: 0.75em;
+  background-color: rgba(0,0,0,0.5);
+  padding: 0.1em 1em;
+  color: white;
+  text-align: center;
+}
+
+#screenshot-panel {
+  height: calc(100% - 4em);
+  width: calc(100% - 4em);
+  top: 2em;
+  left: 2em;
+  position: fixed;
+  z-index: 100;
+  display: none;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center center;
+  cursor: zoom-out;
+}
 
 #system-area {
   background-color: rgb(183, 210, 219);;
+  overflow: hidden;
 }
 
 #system-table {
@@ -513,7 +494,7 @@ $background-blur: 6px;
   border-collapse: collapse;
   color: white;
   font-weight: 100;
-  min-width: 60%;
+  width: calc(66.66666% - 4em);
 }
 
 #system-table td {
@@ -521,6 +502,29 @@ $background-blur: 6px;
     border-bottom: 1px solid #333;
     padding: 0.5em 1em;
 }
+
+// tablet
+@media (max-width: $min-desktop-width) {
+  #screenshot {
+    min-width: 60%;
+    margin: 0 auto 2em auto;
+    float: none;
+    width: calc(100% - 4em);
+  }
+
+  #system-table {
+    width: calc(100% - 4em);
+  }
+}
+
+// mobile
+@media (max-width: ($max-mobile-width)) {
+  #system-table,
+  #screenshot {
+    width: 100%;
+  }
+}
+
 
 // -----------------------------------------------------------------------------
 // Health area

@@ -49,15 +49,23 @@ app.jinja_loader = template_loader
 @app.route("/")
 @app.route("/dashboard")
 def render_dashboard():
-    return render_template('dashboard.html', page = 'dashboard', installed_app = appcenter.get_installed_app(), app_controller = appcenter.get_installed_app_controller(),
+    return render_template('dashboard.html', 
+        page = 'dashboard', 
+        installed_app = appcenter.get_installed_app(), 
+        app_controller = appcenter.get_installed_app_controller(),
         screenshot_service_running = services.is_screenshot_service_running(),
         hostname = system.get_hostname(),
-        uptime = time_to_ISO_string(system.get_uptime())
+        uptime = time_to_ISO_string(system.get_uptime()),
+        ip_address = system.get_ip(),
+        vnc_running = services.is_vnc_running(),
+        ssh_running = services.is_ssh_running(),
     )
 
 @app.route("/network")
 def render_network():
-    return render_template('network.html', page='network', installed_app = appcenter.get_installed_app(),
+    return render_template('network.html', 
+        page='network', 
+        installed_app = appcenter.get_installed_app(),
         interfaces = [{
             'ip': 'x.x.x.x',
             'subnet_mask': '255.255.255.0',
@@ -68,20 +76,26 @@ def render_network():
 @app.route("/appcenter")
 def render_appcenter():
     appcenter.check_available_apps()
-    return render_template('appcenter.html', page='appcenter', installed_app = appcenter.get_installed_app(),
+    return render_template('appcenter.html', 
+        page='appcenter', 
+        installed_app = appcenter.get_installed_app(),
         available_apps = appcenter.get_availeble_apps(),
         time_stamp = time.time()
     )
 
 @app.route("/services")
 def render_services():
-    return render_template('services.html', page='services', installed_app = appcenter.get_installed_app(),
+    return render_template('services.html', 
+        page='services', 
+        installed_app = appcenter.get_installed_app(),
         services = services.get_status()
     )
 
 @app.route("/system")
 def render_system():
-    return render_template('system.html', page='system', installed_app = appcenter.get_installed_app(),
+    return render_template('system.html', 
+        page='system', 
+        installed_app = appcenter.get_installed_app(),
         hostname = system.get_hostname(),
     )
 

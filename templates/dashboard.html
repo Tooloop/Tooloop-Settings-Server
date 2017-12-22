@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div id="presentation-area" class="area">
+    <div id="system-area" class="area">
 
         {% if screenshot_service_running %}
             <div id="screenshot">
@@ -13,22 +13,10 @@
             </div>
         {% endif %}
 
-        <div id="presentation-widget">
-            <h1>{{installed_app.name}}</h1>
-
-            {% if installed_app.has_widget %}
-                {% include 'widget.html' %}
-            {% endif %}
-        </div>
-
-        {% if screenshot_service_running %}
-            <div id="background-image"></div>
-        {% endif %}
-    </div> <!-- end presentation-area -->
-
-    <div id="system-area" class="area">
-        <h1>Device</h1>
         <table id="system-table">
+            <tr>
+                <td colspan="2" style="border-top: none; padding: 0"><h1>{{hostname}}</h1></td>
+            </tr>
             <tr>
                 <td class="label-column">Machine</td>
                 <td class="value-column">
@@ -43,7 +31,7 @@
                 <td class="value-column"><span id="uptime"></span ></td>
             </tr>
             <tr>
-                <td class="label-column">Application</td>
+                <td class="label-column">{{ installed_app.name }}</td>
                 <td class="value-column">
                     <span style="white-space: nowrap;">
                         <button onclick="startPresentation()">Start</button>
@@ -60,12 +48,23 @@
                     </span>
                 </td>
             </tr>
-                {%if false %}
-                <tr>
-                    <td class="label-column">Security updates</td>
-                    <td>4 <button onclick="" style="margin-left:1em;" class="discreet">Install updates</button></td>
-                </tr>
-                {% endif %}
+            {% if ssh_running or vnc_running  %}
+            <tr>
+                <td class="label-column">Remote access</td>
+                <td class="value-column">
+                    <span style="white-space: nowrap;">
+                        {% if ssh_running %}<button onclick="document.location='ssh://tooloop@{{ip_address}}'">SSH</button>{% endif %}
+                        {% if vnc_running %}<button onclick="document.location='vnc://{{ip_address}}'">Screen sharing</button>{% endif %}
+                    </span>
+                </td>
+            </tr>
+            {% endif %}
+            {%if false %}
+            <tr>
+                <td class="label-column">Security updates</td>
+                <td>4 <button onclick="" style="margin-left:1em;" class="discreet">Install updates</button></td>
+            </tr>
+            {% endif %}
         </table>
     </div> <!-- end system-area -->
 
