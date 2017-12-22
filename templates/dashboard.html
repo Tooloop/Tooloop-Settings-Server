@@ -24,7 +24,7 @@
         {% if screenshot_service_running %}
             <div id="background-image"></div>
         {% endif %}
-    </div>
+    </div> <!-- end presentation-area -->
 
     <div id="system-area" class="area">
         <h1>Device</h1>
@@ -32,89 +32,84 @@
             <tr>
                 <td class="label-column">Machine</td>
                 <td class="value-column">
-                    <strong style="margin-right:1em;">{{hostname}}</strong>
                     <span style="white-space: nowrap;">
                         <button onclick="poweroff()">Power off</button>
                         <button onclick="reboot()" style="margin-left:0.5em;">Reboot</button>
                     </span>
-                </tr>
+                </td>
+            </tr>
+            <tr>
+                <td class="label-column top">Uptime</td>
+                <td class="value-column"><span id="uptime"></span ></td>
+            </tr>
+            <tr>
+                <td class="label-column">Application</td>
+                <td class="value-column">
+                    <span style="white-space: nowrap;">
+                        <button onclick="startPresentation()">Start</button>
+                        <button onclick="stopPresentation()">Quit</button>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="label-column">Display</td>
+                <td class="value-column">
+                    <span style="white-space: nowrap;">
+                        <button onclick="displayOn()">On</button>
+                        <button onclick="displayOff()">Off</button>
+                    </span>
+                </td>
+            </tr>
+                {%if false %}
                 <tr>
-                    <td class="label-column">Application</td>
-                    <td class="value-column">
-                        <span style="white-space: nowrap;">
-                            <button onclick="startPresentation()">Start</button>
-                            <button onclick="stopPresentation()">Quit</button>
-                        </span>
-                    </td>
+                    <td class="label-column">Security updates</td>
+                    <td>4 <button onclick="" style="margin-left:1em;" class="discreet">Install updates</button></td>
                 </tr>
-                <tr>
-                    <td class="label-column">Display</td>
-                    <td class="value-column">
-                        <span style="white-space: nowrap;">
-                            <button onclick="displayOn()">On</button>
-                            <button onclick="displayOff()">Off</button>
-                        </span>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="label-column top">Uptime</td>
-                    <td class="value-column">
-                        <span id="uptime"></span >
-                        </td>
-                    </tr>
-                    {%if false %}
-                    <tr>
-                        <td class="label-column">Security updates</td>
-                        <td>4 <button onclick="" style="margin-left:1em;" class="discreet">Install updates</button></td>
-                    </tr>
                 {% endif %}
-            </table>
+        </table>
+    </div> <!-- end system-area -->
 
-        </div> <!-- end system-area -->
-
-        <div id="health-area" class="area">
-            <!-- <h1>Health</h1> -->
-            {% if false %}
-                <div class="graph-container">
-                    <label>GPU Usage [%]</label>
-                    <div id="gpu-usage-graph" class="graph"></div>
-                </div>
-                <div class="graph-container">
-                    <label>GPU temperature [°C]</label>
-                    <div id="gpu-temperature-graph" class="graph"></div>
-                </div>
-            {% endif %}
+    <div id="health-area" class="area">
+        {% if false %}
             <div class="graph-container">
-                <label>CPU Usage [%]</label>
-                <div id="cpu-usage-graph" class="graph"></div>
+                <label>GPU Usage [%]</label>
+                <div id="gpu-usage-graph" class="graph"></div>
             </div>
             <div class="graph-container">
-                <label>CPU temperature [°C]</label>
-                <div id="cpu-temperature-graph" class="graph"></div>
+                <label>GPU temperature [°C]</label>
+                <div id="gpu-temperature-graph" class="graph"></div>
             </div>
-            <div class="graph-container">
-                <label>Memory usage [%]</label>
-                <div id="memory-usage-graph" class="graph"></div>
-            </div>
-            <div class="graph-container">
-                <label>Disk space</label>
-                <div id="hd-usage-diagram" class="graph"></div>
-            </div>
-        </div>
-
-        {% if screenshot_service_running %}
-            <!-- this closes the settings-panel so we can position the cover and big screenshot after it -->
-        </div>
-        <div id="screenshot-panel"  onclick="hideCover()">
-            <!-- <a href="#" onclick="hideCover()" class="close-button">&times;</a> -->
-            <!-- <div id="big-screenshot"></div> -->
-        </div>
-        <div id="cover" onclick="hideCover()">
-            <div id="loader"></div>
-            <!-- the cover div is not closed as we'll use the closing tag of the settings-panel which we closed above -->
         {% endif %}
+        <div class="graph-container">
+            <label>CPU Usage [%]</label>
+            <div id="cpu-usage-graph" class="graph"></div>
+        </div>
+        <div class="graph-container">
+            <label>CPU temperature [°C]</label>
+            <div id="cpu-temperature-graph" class="graph"></div>
+        </div>
+        <div class="graph-container">
+            <label>Memory usage [%]</label>
+            <div id="memory-usage-graph" class="graph"></div>
+        </div>
+        <div class="graph-container">
+            <label>Disk space</label>
+            <div id="hd-usage-diagram" class="graph"></div>
+        </div>
+    </div> <!-- end system-area -->
 
-    {% endblock %}
+    {% if screenshot_service_running %}
+    <div id="screenshot-panel"  onclick="hideCover()">
+        <!-- <a href="#" onclick="hideCover()" class="close-button">&times;</a> -->
+        <!-- <div id="big-screenshot"></div> -->
+    </div>
+    {% endif %}
+    <div id="cover" onclick="hideCover()">
+        <div id="loader"></div>
+        <!-- the cover div is not closed as we'll use the closing tag of the settings-panel which we closed above -->
+    </div>
+{% endblock %}
+
 
 
 {% block page_footer_scripts %}
@@ -168,16 +163,16 @@ $(document).ready(function() {
 
     temperatureGraphOptions.yaxis = { min: 20, max: 85, ticks: 3 };
     temperatureGraphOptions.grid.markings = [
-    {
-        yaxis: { from: 65, to: 65 },
-        color: "#f39a00",
-        lineWidth: 1
-    },
-    {
-        yaxis: { from: 75, to: 75 },
-        color:"#e60050",
-        lineWidth: 1
-    }
+        {
+            yaxis: { from: 65, to: 65 },
+            color: "#f39a00",
+            lineWidth: 1
+        },
+        {
+            yaxis: { from: 75, to: 75 },
+            color:"#e60050",
+            lineWidth: 1
+        }
     ];
 
     var cpuUsageGraphOptions = jQuery.extend(true, {}, usageGraphOptions);
@@ -201,14 +196,14 @@ $(document).ready(function() {
     };
 
     function hsUsageLabelFormatter(label, series) {
-    var val = series.data[0][1]/1024; // MB
-    (val <= 999) ? val = Math.round(val)+" MB" : val = (val/1024).toFixed(2)+" GB";
+        var val = series.data[0][1]/1024; // MB
+        (val <= 999) ? val = Math.round(val)+" MB" : val = (val/1024).toFixed(2)+" GB";
 
-    return (
-        '<div style="text-align:center; font-size:0.8em;">'
-        + '<strong>' + label + '</strong><br/>'
-        + val
-        +'</div>'
+        return (
+            '<div style="text-align:center; font-size:0.8em;">'
+            + '<strong>' + label + '</strong><br/>'
+            + val
+            +'</div>'
         );
     }
 
@@ -245,200 +240,206 @@ $(document).ready(function() {
     var hdUsageDiagram = $.plot("#hd-usage-diagram", hdUsageData, usageDiagramOptions);
 
     function onSystemUsageDataReceived(systemUsage) {
-    // we don't get data, if the serer is down
-    if(systemUsage) {
-    // push the new data into our data array
-    cpuUsageData[0].data.push([new Date(systemUsage.cpu.timestamp).getTime(), systemUsage.cpu.usage_percent.cpu0]);
-    cpuUsageData[1].data.push([new Date(systemUsage.cpu.timestamp).getTime(), systemUsage.cpu.usage_percent.cpu1]);
-    cpuUsageData[2].data.push([new Date(systemUsage.cpu.timestamp).getTime(), systemUsage.cpu.usage_percent.cpu2]);
-    cpuUsageData[3].data.push([new Date(systemUsage.cpu.timestamp).getTime(), systemUsage.cpu.usage_percent.cpu3]);
-    cpuTemperatureData[0].data.push([new Date(systemUsage.cpu.timestamp).getTime(), systemUsage.cpu.temperature]);
-    // gpuTemperatureData[0].data.push([new Date(systemUsage.gpu.timestamp).getTime(), systemUsage.gpu.temperature]);
-    memoryUsageData[0].data.push([new Date(systemUsage.memory.timestamp).getTime(), systemUsage.memory.usage_percent]);
-    onSystemUsageDataReceived
+        // we don't get data, if the serer is down
+        if(systemUsage) {
+            // push the new data into our data array
+            cpuUsageData[0].data.push([new Date(systemUsage.cpu.timestamp).getTime(), systemUsage.cpu.usage_percent.cpu0]);
+            cpuUsageData[1].data.push([new Date(systemUsage.cpu.timestamp).getTime(), systemUsage.cpu.usage_percent.cpu1]);
+            cpuUsageData[2].data.push([new Date(systemUsage.cpu.timestamp).getTime(), systemUsage.cpu.usage_percent.cpu2]);
+            cpuUsageData[3].data.push([new Date(systemUsage.cpu.timestamp).getTime(), systemUsage.cpu.usage_percent.cpu3]);
+            cpuTemperatureData[0].data.push([new Date(systemUsage.cpu.timestamp).getTime(), systemUsage.cpu.temperature]);
+            // gpuTemperatureData[0].data.push([new Date(systemUsage.gpu.timestamp).getTime(), systemUsage.gpu.temperature]);
+            memoryUsageData[0].data.push([new Date(systemUsage.memory.timestamp).getTime(), systemUsage.memory.usage_percent]);
+            onSystemUsageDataReceived
 
-    hdUsageData[0].data = systemUsage.hd.size - systemUsage.hd.data - systemUsage.hd.logs - systemUsage.hd.presentation - systemUsage.hd.screenshots;
-    hdUsageData[1].data = systemUsage.hd.data;
-    hdUsageData[2].data = systemUsage.hd.logs;
-    hdUsageData[3].data = systemUsage.hd.presentation;
-    hdUsageData[4].data = systemUsage.hd.screenshots;
-    } else {
-    // push some zeros
-    time = new Date().getTime()
-    cpuUsageData[0].data.push([time, null]);
-    cpuUsageData[1].data.push([time, null]);
-    cpuUsageData[2].data.push([time, null]);
-    cpuUsageData[3].data.push([time, null]);
-    cpuTemperatureData[0].data.push([time, null]);
-    // gpuTemperatureData[0].data.push([time, null]);
-    memoryUsageData[0].data.push([time, null]);
-    }
-    // remove old points
-    if (cpuUsageData[0].data.length > 150) cpuUsageData[0].data.shift();
-    if (cpuUsageData[1].data.length > 150) cpuUsageData[1].data.shift();
-    if (cpuUsageData[2].data.length > 150) cpuUsageData[2].data.shift();
-    if (cpuUsageData[3].data.length > 150) cpuUsageData[3].data.shift();
-    if (cpuUsageData[0].data.length > 150) cpuUsageData[0].data.shift();
-    if (cpuTemperatureData[0].data.length > 150) cpuTemperatureData[0].data.shift();
-    // if (gpuTemperatureData[0].data.length > 150) gpuTemperatureData[0].data.shift();
-    if (memoryUsageData[0].data.length > 150) memoryUsageData[0].data.shift();
-    // redraw graphs
-    cpuUsageGraph.setData(cpuUsageData);
-    cpuUsageGraph.setupGrid();
-    cpuUsageGraph.draw();
-    cpuTemperatureGraph.setData(cpuTemperatureData);
-    cpuTemperatureGraph.setupGrid();
-    cpuTemperatureGraph.draw();
-    // gpuTemperatureGraph.setData(gpuTemperatureData);
-    // gpuTemperatureGraph.setupGrid();
-    // gpuTemperatureGraph.draw();
-    memoryUsageGraph.setData(memoryUsageData);
-    memoryUsageGraph.setupGrid();
-    memoryUsageGraph.draw();
-    hdUsageDiagram.setData(hdUsageData);
-    hdUsageDiagram.setupGrid();
-    hdUsageDiagram.draw();
+            hdUsageData[0].data = systemUsage.hd.size - systemUsage.hd.data - systemUsage.hd.logs - systemUsage.hd.presentation - systemUsage.hd.screenshots;
+            hdUsageData[1].data = systemUsage.hd.data;
+            hdUsageData[2].data = systemUsage.hd.logs;
+            hdUsageData[3].data = systemUsage.hd.presentation;
+            hdUsageData[4].data = systemUsage.hd.screenshots;
+        } else {
+            // push some zeros
+            time = new Date().getTime()
+            cpuUsageData[0].data.push([time, null]);
+            cpuUsageData[1].data.push([time, null]);
+            cpuUsageData[2].data.push([time, null]);
+            cpuUsageData[3].data.push([time, null]);
+            cpuTemperatureData[0].data.push([time, null]);
+            // gpuTemperatureData[0].data.push([time, null]);
+            memoryUsageData[0].data.push([time, null]);
+        }
+        // remove old points
+        if (cpuUsageData[0].data.length > 150) cpuUsageData[0].data.shift();
+        if (cpuUsageData[1].data.length > 150) cpuUsageData[1].data.shift();
+        if (cpuUsageData[2].data.length > 150) cpuUsageData[2].data.shift();
+        if (cpuUsageData[3].data.length > 150) cpuUsageData[3].data.shift();
+        if (cpuUsageData[0].data.length > 150) cpuUsageData[0].data.shift();
+        if (cpuTemperatureData[0].data.length > 150) cpuTemperatureData[0].data.shift();
+        // if (gpuTemperatureData[0].data.length > 150) gpuTemperatureData[0].data.shift();
+        if (memoryUsageData[0].data.length > 150) memoryUsageData[0].data.shift();
+        // redraw graphs
+        cpuUsageGraph.setData(cpuUsageData);
+        cpuUsageGraph.setupGrid();
+        cpuUsageGraph.draw();
+        cpuTemperatureGraph.setData(cpuTemperatureData);
+        cpuTemperatureGraph.setupGrid();
+        cpuTemperatureGraph.draw();
+        // gpuTemperatureGraph.setData(gpuTemperatureData);
+        // gpuTemperatureGraph.setupGrid();
+        // gpuTemperatureGraph.draw();
+        memoryUsageGraph.setData(memoryUsageData);
+        memoryUsageGraph.setupGrid();
+        memoryUsageGraph.draw();
+        hdUsageDiagram.setData(hdUsageData);
+        hdUsageDiagram.setupGrid();
+        hdUsageDiagram.draw();
     }
 
     // start regular updates
     setInterval(function(){ getSystemUsage(onSystemUsageDataReceived); }, 3000);
 
-    }); // end document ready
+}); // end document ready
 
 
 
-    {% if screenshot_service_running %}
-    // -----------------------------------------------------------------------------
-    // SCREENSHOTS
-    // -----------------------------------------------------------------------------
+{% if screenshot_service_running %}
+// -----------------------------------------------------------------------------
+// SCREENSHOTS
+// -----------------------------------------------------------------------------
 
-    var loadLatestThumbnail = function() {
+var loadLatestThumbnail = function() {
+    $.ajax({
+        url: '/tooloop/api/v1.0/screenshot/latest',
+        dataType: 'json',
+        success: function(data) {
+            updateScreenshot(data);
+        }
+    });
+}
+
+var latestScreenshot;
+
+var updateScreenshot = function(screenshot) {
+    latestScreenshot = screenshot;
+    if ($("#screenshot-thumbnail").attr("src") !== latestScreenshot.thumbnail_url) {
+        // latestScreenshotThumbnail = new Image();
+        // latestScreenshotThumbnail.src = data.thumbnail_url;
+        $("#screenshot-thumbnail").attr("src",latestScreenshot.thumbnail_url);
+        $('#background-image').css('background-image', 'url("'+latestScreenshot.thumbnail_url+'")');
+        $("#screenshot-timestamp").html('Screenshot from ' + new Date(latestScreenshot.date).toLocaleTimeString());
+    }
+}
+
+var showScreenshotPanel = function() {
+    if (latestScreenshot) {
+        if (screen.width > 640) {
+            $('#cover').fadeIn(100);
+            $('#screenshot-panel').fadeIn(100);
+
+            // load big screenshot
+            $('#screenshot-panel').css('background-image', 'url("'+latestScreenshot.url+'")')
+        } else {
+            var screenshot = window.open(latestScreenshot.url, '_blank');
+            screenshot.focus();
+        }
+    }
+}
+
+{% endif %}
+
+var hideCover = function() {
+    $('#cover').fadeOut(100);
+    $('#screenshot-panel').fadeOut(100);
+}
+
+
+// -----------------------------------------------------------------------------
+// API calls
+// -----------------------------------------------------------------------------
+
+var poweroff = function() {
+    if( confirm("Are you sure, you want to power off the machine?") ) {
         $.ajax({
-            url: '/tooloop/api/v1.0/screenshot/latest',
-            dataType: 'json',
-            success: function(data) {
-                updateScreenshot(data);
-            }
-        });
+            url: "/tooloop/api/v1.0/system/poweroff"
+        }).done(function( data ) {});
     }
+}
 
-    var latestScreenshot;
-
-    var updateScreenshot = function(screenshot) {
-        latestScreenshot = screenshot;
-        if ($("#screenshot-thumbnail").attr("src") !== latestScreenshot.thumbnail_url) {
-    // latestScreenshotThumbnail = new Image();
-    // latestScreenshotThumbnail.src = data.thumbnail_url;
-    $("#screenshot-thumbnail").attr("src",latestScreenshot.thumbnail_url);
-    $('#background-image').css('background-image', 'url("'+latestScreenshot.thumbnail_url+'")');
-    $("#screenshot-timestamp").html('Screenshot from ' + new Date(latestScreenshot.date).toLocaleTimeString());
-    }
-    }
-
-    var showScreenshotPanel = function() {
-        if (latestScreenshot) {
-            if (screen.width > 640) {
-                $('#cover').fadeIn(100);
-                $('#screenshot-panel').fadeIn(100);
-
-    // load big screenshot
-    $('#screenshot-panel').css('background-image', 'url("'+latestScreenshot.url+'")')
-    } else {
-        var screenshot = window.open(latestScreenshot.url, '_blank');
-        screenshot.focus();
-    }
-    }
-    }
-
-    var hideCover = function() {
-        $('#cover').fadeOut(100);
-        $('#screenshot-panel').fadeOut(100);
-    }
-    {% endif %}
-
-
-    // -----------------------------------------------------------------------------
-    // API calls
-    // -----------------------------------------------------------------------------
-
-
-    var poweroff = function() {
-        if( confirm("Are you sure, you want to power off the machine?") ) {
+var rebooting = false;
+var reboot = function() {
+    if( confirm("Are you sure, you want to reboot the machine?") ) {
+        rebooting = true;
+        $('#cover').fadeIn(100, function(){
             $.ajax({
-                url: "/tooloop/api/v1.0/system/poweroff"
-            }).done(function( data ) {});
-        }
-    }
-
-    var reboot = function() {
-        if( confirm("Are you sure, you want to reboot the machine?") ) {
-            $('#cover').fadeIn(100, function(){
-                $.ajax({
-                    url: "/tooloop/api/v1.0/system/reboot"
-                }).done(function( data ) {
-                    setTimeout(function() { document.location.reload(); }, 1000);
-                });
+                url: "/tooloop/api/v1.0/system/reboot"
+            }).done(function( data ) {
             });
-        }
-    }
-
-    var startPresentation = function() {
-        $.ajax({
-            url: "/tooloop/api/v1.0/presentation/start"
-        }).done(function( data ) {
-            setTimeout(grabScreenshot, 2000);
         });
     }
+}
 
-    var stopPresentation = function() {
-        $.ajax({
-            url: "/tooloop/api/v1.0/presentation/stop"
-        }).done(function( data ) {
-            setTimeout(grabScreenshot, 1000);
-        });
-    }
+var startPresentation = function() {
+    $.ajax({
+        url: "/tooloop/api/v1.0/presentation/start"
+    }).done(function( data ) {
+        setTimeout(grabScreenshot, 2000);
+    });
+}
 
-    var resetPresentation = function() {
-        $.ajax({
-            url: "/tooloop/api/v1.0/presentation/reset"
-        }).done(function( data ) {
-            setTimeout(grabScreenshot, 2000);
-        });
-    }
+var stopPresentation = function() {
+    $.ajax({
+        url: "/tooloop/api/v1.0/presentation/stop"
+    }).done(function( data ) {
+        setTimeout(grabScreenshot, 1000);
+    });
+}
 
-    var grabScreenshot = function() {
-        $.ajax({
-            url: "/tooloop/api/v1.0/screenshot/grab"
-        }).done(function(){
-            loadLatestThumbnail();
-        });
-    }
+var resetPresentation = function() {
+    $.ajax({
+        url: "/tooloop/api/v1.0/presentation/reset"
+    }).done(function( data ) {
+        setTimeout(grabScreenshot, 2000);
+    });
+}
 
-    var displayOn = function() {
-        $.ajax({
-            url: "/tooloop/api/v1.0/presentation/displayon"
-        }).done(function(data){setDisplayState(data)});
-    }
+var grabScreenshot = function() {
+    $.ajax({
+        url: "/tooloop/api/v1.0/screenshot/grab"
+    }).done(function(){
+        loadLatestThumbnail();
+    });
+}
 
-    var displayOff = function() {
-        $.ajax({
-            url: "/tooloop/api/v1.0/presentation/displayoff"
-        }).done(function(data){setDisplayState(data)});
-    }
-    // TODO: read initially afte page load and define REST interace for that
-    var setDisplayState = function(data) {
-        $('#screenshot').removeClass();
-        if (data.Display.toLowerCase() !== 'on'){
-            $('#screenshot').addClass(data.Display.toLowerCase());
-        }
-    }
+var displayOn = function() {
+    $.ajax({
+        url: "/tooloop/api/v1.0/presentation/displayon"
+    }).done(function(data){setDisplayState(data)});
+}
 
-    var getSystemUsage = function(doneFunction) {
-        $.ajax({
-            url: "/tooloop/api/v1.0/system/usage",
-    timeout: 3000 // sets timeout to 3 seconds
+var displayOff = function() {
+    $.ajax({
+        url: "/tooloop/api/v1.0/presentation/displayoff"
+    }).done(function(data){setDisplayState(data)});
+}
+
+// TODO: read initially after page load and define REST interace for that
+var setDisplayState = function(data) {
+    $('#screenshot').removeClass();
+    if (data.Display.toLowerCase() !== 'on'){
+        $('#screenshot').addClass(data.Display.toLowerCase());
+    }
+}
+
+var getSystemUsage = function(doneFunction) {
+    $.ajax({
+        url: "/tooloop/api/v1.0/system/usage",
+        timeout: 3000 // sets timeout to 3 seconds
     }).done(function(data){
         doneFunction(data);
+        if (data && rebooting) {    
+            rebooting = false;
+            hideCover();
+        }
     }).error(function(data){
         doneFunction(null);
     });
