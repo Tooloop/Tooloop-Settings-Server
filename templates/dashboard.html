@@ -105,7 +105,6 @@
     {% endif %}
     <div id="cover" onclick="hideCover()">
         <div id="loader"></div>
-        <!-- the cover div is not closed as we'll use the closing tag of the settings-panel which we closed above -->
     </div>
 {% endblock %}
 
@@ -120,8 +119,9 @@
 <script type="text/javascript">
 
 $(document).ready(function() {
+
     // ---------------------------------------------------------------------------
-    // UPTIME
+    // Uptime
     // ---------------------------------------------------------------------------
     var uptime = new Date('{{uptime}}');
     $('#uptime').html(
@@ -130,9 +130,10 @@ $(document).ready(function() {
         + uptime.toLocaleTimeString()
         );
 
+
     {% if screenshot_service_running %}
     // -----------------------------------------------------------------------------
-    // SCREENSHOTS
+    // Screenshots
     // -----------------------------------------------------------------------------
     // load thumbnail
     loadLatestThumbnail();
@@ -142,8 +143,16 @@ $(document).ready(function() {
 
 
     // -----------------------------------------------------------------------------
-    // GRAPHS
+    // Display State
     // -----------------------------------------------------------------------------
+
+    getDisplayState();
+
+
+    // -----------------------------------------------------------------------------
+    // Graphs
+    // -----------------------------------------------------------------------------
+
     var commonGraphOptions = {
         grid: { borderWidth: 0, borderColor: '#ccc', backgroundColor: "white", hoverable: true, autoHighlight: false, margin:0, labelMargin: 0, axisMargin: 0},
         lines: { show: true, steps: false, lineWidth: 1, fill: true, fillColor: "rgba(0,196,255,0.1)" },
@@ -418,6 +427,13 @@ var displayOn = function() {
 var displayOff = function() {
     $.ajax({
         url: "/tooloop/api/v1.0/presentation/displayoff"
+    }).done(function(data){setDisplayState(data)});
+}
+
+
+var getDisplayState = function() {
+    $.ajax({
+        url: "/tooloop/api/v1.0/presentation/displaystate"
     }).done(function(data){setDisplayState(data)});
 }
 
