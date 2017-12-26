@@ -235,6 +235,14 @@ def display_off():
     except Exception as e:
         abort(500)
 
+@app.route('/tooloop/api/v1.0/presentation/displaystate', methods=['GET'])
+def display_state():
+    try:
+        state = presentation.check_display_state()
+        return jsonify({ 'Display' : state })
+    except Exception as e:
+        abort(500)
+
 # appcenter
 
 @app.route('/tooloop/api/v1.0/appcenter/installed', methods=['GET'])
