@@ -21,6 +21,7 @@ from utils.time_utils import *
 import augeas
 import time
 
+from pprint import pprint
 
 # ------------------------------------------------------------------------------
 # INIT
@@ -56,7 +57,6 @@ def render_dashboard():
         screenshot_service_running = services.is_screenshot_service_running(),
         hostname = system.get_hostname(),
         uptime = time_to_ISO_string(system.get_uptime()),
-        ip_address = system.get_ip(),
         vnc_running = services.is_vnc_running(),
         ssh_running = services.is_ssh_running(),
     )
@@ -80,7 +80,7 @@ def render_appcenter():
         page='appcenter', 
         installed_app = appcenter.get_installed_app(),
         available_apps = appcenter.get_availeble_apps(),
-        time_stamp = time.time()
+        time_stamp = time.time(),
     )
 
 @app.route("/services")
@@ -88,7 +88,7 @@ def render_services():
     return render_template('services.html', 
         page='services', 
         installed_app = appcenter.get_installed_app(),
-        services = services.get_status()
+        services = services.get_status(),
     )
 
 @app.route("/system")
@@ -97,6 +97,7 @@ def render_system():
         page='system', 
         installed_app = appcenter.get_installed_app(),
         hostname = system.get_hostname(),
+        ip_address = system.get_ip(),
     )
 
 
@@ -138,11 +139,11 @@ def get_hostname():
 
 @app.route('/tooloop/api/v1.0/system/hostname', methods=['PUT'])
 def set_hostname():
-    if not request.json or not 'hostname' in request.json:
+    if not request.form or not 'hostname' in request.form:
         abort(400)
     try:
-        system.set_hostname(request.json['hostname'])
-        return jsonify({'hostname': request.json['hostname']}), 201
+        system.set_hostname(request.form['hostname'])
+        return jsonify({'hostname': system.get_hostname()}), 200
     except Exception as e:
         abort(500)
 

@@ -13,17 +13,29 @@
   <tr>
     <td class="label-column">Name</td>
     <td class="value-column">
-      <input type="text" value="{{hostname}}"/></input>
+      <form id="hostname-form">
+        <input type="text" id="hostname-input" value="{{hostname}}">
+        <button type="submit">Save</button>
+      </form>
+      <div id="hostname-feedback" class="feedback"></div>
     </td>
+    <tr>
+      <td class="label-column">IP address</td>
+      <td class="value-column">{{ ip_address }}</td>
+    </tr>
   </tr>
   <tr><td colspan="2"><h2>Change password</h2></td></tr>
 
   <tr>
     <td class="label-column"></td>
     <td class="value-column">
-      <p><input type="password" id="old-password" name="old-password"/> <label for="old-password">Old password</label></p>
-      <p><input type="password" id="new-password" name="new-password"/> <label for="new-password">New password</label></p>
-      <p><input type="password" id="repeat-new-password" name="repeat-new-password"/> <label for="repeat-new-password">Repeat new password</label></p>
+      <form id="password-form">
+        <p><input type="password" id="old-password" name="old-password"/> <label for="old-password">Old password</label></p>
+        <p><input type="password" id="new-password" name="new-password"/> <label for="new-password">New password</label></p>
+        <p><input type="password" id="repeat-new-password" name="repeat-new-password" /> <label for="repeat-new-password">Repeat new password</label></p>
+        <button type="submit">Save</button>
+      </form>
+      <div id="password-feedback" class="feedback"></div>
     </td>
   </tr>
 
@@ -31,4 +43,62 @@
 
 
 {% block page_footer_scripts %}
+
+<script type="text/javascript">
+
+  $('#hostname-form').on('submit', function(event) {
+    event.preventDefault();
+
+    // displayWaitingFeedback('#hostname-feedback');
+
+    $.ajax({
+      method: "PUT",
+      data: { "hostname":$('#hostname-input').val() },
+      url: "/tooloop/api/v1.0/system/hostname"
+    }).done(function( data ) {
+      // TODO: real feedback
+      console.log(data);
+      // displayConfirmFeedback('#hostname-feedback', 'Saved');
+    }).error(function( data ) {
+      // TODO: real feedback
+      console.error(data);
+      // displayErrorFeedback('#hostname-feedback', data.???);
+    });
+  });
+
+
+  // <div id="hostname-feedback" class="feedback" style="display: none;">
+  //   <img class="feedback-icon" src="static/img/waiting_animation.gif" style="vertical-align: middle; height: 1.777777em; margin-right: -0.233333em;" />
+  //   <label class="feedback-text" style="display: none"></label>
+  // </div>
+
+  var displayConfirmFeedback = function(container, message) {
+    $(form).find(".feedback-icon").attr("src", "static/img/confirm_animation.gif");
+    $(form).find(".feedback").css("display", "inline");
+    $(form).find(".feedback-text").text(message);
+    $(form).find(".feedback-text").delay(400).fadeIn(500);
+    $(form).find(".feedback").delay(3000).fadeOut();
+    return false;
+  }
+  
+  var displayErrorFeedback = function(container, message) {
+    $(form).find(".feedback-icon").attr("src", "static/img/error_animation.gif");
+    $(form).find(".feedback").css("display", "inline");
+    $(form).find(".feedback-text").text(message);
+    $(form).find(".feedback-text").delay(400).fadeIn(500);
+    $(form).find(".feedback").delay(3000).fadeOut();
+    return false;
+  }
+
+  var displayWaitingFeedback = function(container) {
+    $(form).find(".feedback-icon").attr("src", "static/img/waiting_animation.gif");
+    $(form).find(".feedback-text").text("");
+    $(form).find(".feedback-text").hide();
+    $(form).find(".feedback").css("display", "inline");
+    $(form).find(".feedback").fadeIn();
+    return false;
+  }
+
+</script>
+
 {% endblock %}
