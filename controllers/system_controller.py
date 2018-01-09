@@ -80,7 +80,7 @@ class System(object):
         if thermal_zones:
             # get the temperatures and sum them up
             for zone in thermal_zones:
-                temperature += float(os.popen('cat '+zone).readline().strip())/1000
+                temperature += float(os.popen('cat '+zone+'/temp').readline().strip())/1000
             # calculate the average
             temperature /= len(thermal_zones)
 
