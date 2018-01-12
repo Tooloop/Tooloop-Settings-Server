@@ -106,7 +106,7 @@ class AppCenter(object):
         self.available_apps = []
         directory = listdir(self.app_path)
         for app in directory:
-            if isfile(self.app_path+app+'/bundle/app.definition'):
+            if isfile(self.app_path+app+'/bundle/app.json'):
                 app_definition = self.app_definition_from_bundle(self.app_path+app+'/bundle')
                 if app_definition:
                     self.available_apps.append(app_definition)
@@ -115,12 +115,12 @@ class AppCenter(object):
 
     def app_definition_from_bundle(self, bundle_path):
 
-        if not isfile(bundle_path+"/app.definition"):
+        if not isfile(bundle_path+"/app.json"):
             return None
 
         app_definition = AppDefinition()
 
-        with open(bundle_path+"/app.definition") as json_data:
+        with open(bundle_path+"/app.json") as json_data:
             d = json.load(json_data)
 
             app_definition.name = d.get('name', None)
