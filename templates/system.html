@@ -2,103 +2,96 @@
 
 {% block content %}
 <table class="settings-table">
-  <tr>
-    <td colspan="2" style="padding: 2em 0; text-align: center;">
-      <p><img src="/static/img/tooloop_logo.png" style="width:100%; max-width:240px;"/></p>
-      <h1>Tooloop OS</h1>
-      <span class="gray">{{osVersion}}</span>
-    </td>
-  </tr>
-  <tr><td colspan="2"><h2>System</h2></td></tr>
-  <tr>
-    <td class="label-column">Name</td>
-    <td class="value-column">
-      <form id="hostname-form">
-        <input type="text" id="hostname-input" value="{{hostname}}">
-        <button type="submit">Save</button>
-      </form>
-      <div id="hostname-feedback" class="feedback"></div>
-    </td>
     <tr>
-      <td class="label-column">IP address</td>
-      <td class="value-column">{{ ip_address }}</td>
+        <td colspan="2" style="padding: 2em 0; text-align: center;">
+            <p><img src="/static/img/tooloop_logo.png" style="width:100%; max-width:240px;"/></p>
+            <h1>Tooloop OS</h1>
+            <span class="gray">{{osVersion}}</span>
+        </td>
     </tr>
-  </tr>
-  <tr><td colspan="2"><h2>Change password</h2></td></tr>
+    <tr><td colspan="2"><h2>System</h2></td></tr>
+    <tr>
+        <td class="label-column">Name</td>
+        <td class="value-column">
+            <form id="hostname-form" style="float: left;">
+                <input type="text" id="hostname-input" value="{{hostname}}">
+                <button type="submit">Save</button>
+            </form>
+        </td>
+        <tr>
+            <td class="label-column">IP address</td>
+            <td class="value-column">{{ ip_address }}</td>
+        </tr>
+    </tr>
+    <tr><td colspan="2"><h2>Change password</h2></td></tr>
 
-  <tr>
-    <td class="label-column"></td>
-    <td class="value-column">
-      <form id="password-form">
-        <p><input type="password" id="old-password" name="old-password"/> <label for="old-password">Old password</label></p>
-        <p><input type="password" id="new-password" name="new-password"/> <label for="new-password">New password</label></p>
-        <p><input type="password" id="repeat-new-password" name="repeat-new-password" /> <label for="repeat-new-password">Repeat new password</label></p>
-        <button type="submit">Save</button>
-      </form>
-      <div id="password-feedback" class="feedback"></div>
-    </td>
-  </tr>
+    <tr>
+        <td class="label-column"></td>
+        <td class="value-column">
+            <form id="password-form">
+                <p><input type="password" id="old-password" name="old-password"/> <label for="old-password">Old password</label></p>
+                <p><input type="password" id="new-password" name="new-password"/> <label for="new-password">New password</label></p>
+                <p><input type="password" id="repeat-new-password" name="repeat-new-password" /> <label for="repeat-new-password">Repeat new password</label></p>
+                <button type="submit">Save</button>
+            </form>
+        </td>
+    </tr>
 
-{% endblock %}
-
-
-{% block page_footer_scripts %}
-
-<script type="text/javascript">
-
-  $('#hostname-form').on('submit', function(event) {
-    event.preventDefault();
-
-    // displayWaitingFeedback('#hostname-feedback');
-
-    $.ajax({
-      method: "PUT",
-      data: { "hostname":$('#hostname-input').val() },
-      url: "/tooloop/api/v1.0/system/hostname"
-    }).done(function( data ) {
-      // TODO: real feedback
-      console.log(data);
-      // displayConfirmFeedback('#hostname-feedback', 'Saved');
-    }).error(function( data ) {
-      // TODO: real feedback
-      console.error(data);
-      // displayErrorFeedback('#hostname-feedback', data.???);
-    });
-  });
+    {% endblock %}
 
 
-  // <div id="hostname-feedback" class="feedback" style="display: none;">
-  //   <img class="feedback-icon" src="static/img/waiting_animation.gif" style="vertical-align: middle; height: 1.777777em; margin-right: -0.233333em;" />
-  //   <label class="feedback-text" style="display: none"></label>
-  // </div>
+    {% block page_footer_scripts %}
 
-  var displayConfirmFeedback = function(container, message) {
-    $(form).find(".feedback-icon").attr("src", "static/img/confirm_animation.gif");
-    $(form).find(".feedback").css("display", "inline");
-    $(form).find(".feedback-text").text(message);
-    $(form).find(".feedback-text").delay(400).fadeIn(500);
-    $(form).find(".feedback").delay(3000).fadeOut();
-    return false;
-  }
-  
-  var displayErrorFeedback = function(container, message) {
-    $(form).find(".feedback-icon").attr("src", "static/img/error_animation.gif");
-    $(form).find(".feedback").css("display", "inline");
-    $(form).find(".feedback-text").text(message);
-    $(form).find(".feedback-text").delay(400).fadeIn(500);
-    $(form).find(".feedback").delay(3000).fadeOut();
-    return false;
-  }
+    <script type="text/javascript">
 
-  var displayWaitingFeedback = function(container) {
-    $(form).find(".feedback-icon").attr("src", "static/img/waiting_animation.gif");
-    $(form).find(".feedback-text").text("");
-    $(form).find(".feedback-text").hide();
-    $(form).find(".feedback").css("display", "inline");
-    $(form).find(".feedback").fadeIn();
-    return false;
-  }
+        $('#hostname-form').on('submit', function(event) {
+            event.preventDefault();
 
-</script>
+            var feedback = attachFeedback(event.target);
+
+            $.ajax({
+                method: "PUT",
+                data: { "hostname":$('#hostname-input').val() },
+                url: "/tooloop/api/v1.0/system/hostname"
+            }).done(function( data ) {
+                displayConfirmFeedback(feedback, 'Saved');
+            }).error(function( jqXHR, textStatus, errorThrown ) {
+                displayErrorFeedback(feedback, errorThrown);
+            });
+
+        });
+
+
+        $('#password-form').on('submit', function(event) {
+            event.preventDefault();
+            var feedback = attachFeedback(event.target);
+
+            var oldPassword = $("#old-password").val();
+            var newPassword = $("#new-password").val();
+            var repeatNewPassword = $("#repeat-new-password").val();
+
+            if (oldPassword == "" || newPassword == "" || repeatNewPassword == "") {
+                displayErrorFeedback(feedback, "Please fill all fields.");
+                return;
+            }
+
+            if ( newPassword != repeatNewPassword) {
+                displayErrorFeedback(feedback, "New passwords don’t match.");
+                return;
+            }
+
+            $.ajax({
+                method: "PUT",
+                data: { "oldPassword" : oldPassword, "mewPassword": newPassword, "repeatNewPassword" : repeatNewPassword },
+                url: "/tooloop/api/v1.0/system/password"
+            }).done(function( data ) {
+                displayConfirmFeedback(feedback, 'Saved');
+            }).error(function( jqXHR, textStatus, errorThrown ) {
+                displayErrorFeedback(feedback, errorThrown);
+            });
+
+        });
+
+    </script>
 
 {% endblock %}

@@ -4,13 +4,59 @@
 
 <script type=text/javascript>
 
-  $(function() {
-      FastClick.attach(document.body);
-  });
+    $(function() {
+        FastClick.attach(document.body);
+    });
 
-  function toggleMenu() {
-    $('body').toggleClass('mobile-menu');
-    $('#sidebar').toggleClass('mobile-menu');
-  }
+    function toggleMenu() {
+        $('body').toggleClass('mobile-menu');
+        $('#sidebar').toggleClass('mobile-menu');
+    }
+        
+    // ---------------------------------------------------------------------------
+    // FEEDBACK
+    // ---------------------------------------------------------------------------
+    var feedbackTimeouts = {};
 
+    var attachFeedback = function(form) {    
+        var feedbackId = form.id+"-feedback";
+
+        // check if there already is a feedback container
+        if ($("#"+feedbackId).length > 0) {
+            // cancel fade out
+            clearTimeout(feedbackTimeouts[feedbackId]);
+            return $("#"+feedbackId);
+        }
+
+        // add html
+        $(form).append('\
+            <div id="'+form.id+'-feedback" class="feedback" style="display:inline;"> \
+                <img class="feedback-icon" src="static/img/waiting_animation.gif" style="vertical-align: middle; height: 1.777777em; margin-right: -0.233333em;" /> \
+                <label class="feedback-text" style="display:none;"></label> \
+            </div> \
+        ');
+
+        return $("#"+feedbackId);
+    }
+
+    var displayConfirmFeedback = function(feedbackContainer, message) {
+        displayFeedback(feedbackContainer, "static/img/confirm_animation.gif", message);
+    }
+
+    var displayErrorFeedback = function(feedbackContainer, message) {
+        displayFeedback(feedbackContainer, "static/img/error_animation.gif", message);
+    }
+
+    var displayFeedback = function(feedbackContainer, icon, message) {
+        feedbackContainer.children(".feedback-icon").attr("src", icon);
+        feedbackContainer.children(".feedback-text").text(message);
+        feedbackContainer.children(".feedback-text").delay(400).fadeIn(500);
+
+        // remove feedback
+        feedbackTimeouts[feedbackContainer.attr("id")] = setTimeout(function(){
+            feedbackContainer.fadeOut(400, function(){
+                feedbackContainer.remove();
+            });
+        }, 3000);
+    }
 </script>
