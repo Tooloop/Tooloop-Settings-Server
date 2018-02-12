@@ -22,7 +22,7 @@
 {% endif %}
 
 <div id="appcenter-area" class="area">
-    {% for app in available_apps %}
+    {% for app in available_apps if not app.name == installed_app.name %}
     <div class="app">
         <img class="preview-image" src="/appcenter/{{app.name}}/bundle/preview_image.jpg" />
         <div class="info-area">
@@ -46,13 +46,20 @@
     $(document).ready(function() {
     });
 
+
     var install = function(name) {
-      $.ajax({
-        url: "/tooloop/api/v1.0/appcenter/install/"+name
-    }).done(function( data ) {
-        location.reload();
-    });
-}
+        {% if installed_app %}
+            if(!confirm("Do you want to install "+name+"? {{installed_app.name}} will be uninstalled!") ) {
+                return;
+            }
+        {% endif %}
+
+        $.ajax({
+            url: "/tooloop/api/v1.0/appcenter/install/"+name
+        }).done(function( data ) {
+           location.reload();
+        });
+    }
 
 </script>
 {% endblock %}
