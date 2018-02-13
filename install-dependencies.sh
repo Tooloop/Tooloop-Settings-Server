@@ -9,6 +9,7 @@ fi
 apt-get install -y \
     python-pip \
     python-augeas \
-    python-crontab
+    python-crontab \
+    python-pexpect
 
 pip install flask

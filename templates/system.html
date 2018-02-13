@@ -54,7 +54,7 @@
                 data: { "hostname":$('#hostname-input').val() },
                 url: "/tooloop/api/v1.0/system/hostname"
             }).done(function( data ) {
-                displayConfirmFeedback(feedback, 'Saved');
+                displayConfirmFeedback(feedback, data.message);
             }).error(function( jqXHR, textStatus, errorThrown ) {
                 displayErrorFeedback(feedback, errorThrown);
             });
@@ -82,12 +82,21 @@
 
             $.ajax({
                 method: "PUT",
-                data: { "oldPassword" : oldPassword, "mewPassword": newPassword, "repeatNewPassword" : repeatNewPassword },
+                data: { "oldPassword" : oldPassword, "newPassword": newPassword },
                 url: "/tooloop/api/v1.0/system/password"
             }).done(function( data ) {
-                displayConfirmFeedback(feedback, 'Saved');
+                console.log(data);
+                displayConfirmFeedback(feedback, data.message);
             }).error(function( jqXHR, textStatus, errorThrown ) {
-                displayErrorFeedback(feedback, errorThrown);
+                responseText = $.parseHTML(jqXHR.responseText);
+
+                for (var i=0; i<responseText.length; i++) {
+                    if (responseText[i].tagName == 'P') {
+                        displayErrorFeedback(feedback, responseText[i].textContent);
+                        break;
+                    }
+                }
+
             });
 
         });

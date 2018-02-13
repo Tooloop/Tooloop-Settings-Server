@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from subprocess import check_output, check_call, Popen, PIPE
 import os
+import time
+import pexpect
 from utils.time_utils import *
 from utils.cpu_load import CpuLoad
 
@@ -20,11 +22,29 @@ class System(object):
             raise
 
     def set_hostname(self, hostname):
+        old_hostname = self.get_hostname()
+
         try:
+            # change /etc/hostname
             self.augtool.set("/files/etc/hostname/hostname", hostname)
             self.augtool.save()
         except Exception as e:
             raise
+
+        try:
+            # change /etc/hosts
+            with open('/etc/hosts', 'r') as file :
+              filedata = file.read()
+
+            # Replace the target string
+            filedata = filedata.replace(old_hostname, hostname)
+
+            # Write the file out again
+            with open('/etc/hosts', 'w') as file:
+              file.write(filedata)
+        except Exception as e:
+            raise e
+
 
     def get_ip(self):
         try:
@@ -137,6 +157,25 @@ class System(object):
             check_call(["poweroff"])
         except Exception as e:
             raise
+
+    def set_password(self, old_password, new_password):        
+        # test if current password is correct
+        child = pexpect.spawn('/usr/bin/sudo -u tooloop /usr/bin/passwd tooloop')
+        child.expect('.*current.*')
+        child.sendline(old_password)
+        child.expect('.*password.*')
+
+        if ('new' in child.after):
+            # set new password
+            child = pexpect.spawn('/usr/bin/passwd tooloop')
+            # repeat it 2 times
+            for x in xrange(2):
+                child.expect('.*')
+                child.sendline(new_password)
+                time.sleep(0.1)
+
+        else:
+            raise Exception('The old password was not correct.')
 
     def to_dict(self):
         return {

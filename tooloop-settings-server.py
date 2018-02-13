@@ -143,7 +143,7 @@ def set_hostname():
         abort(400)
     try:
         system.set_hostname(request.form['hostname'])
-        return jsonify({'hostname': system.get_hostname()}), 200
+        return jsonify({'message': 'Hostname saved', 'hostname': system.get_hostname()})
     except Exception as e:
         abort(500)
 
@@ -184,7 +184,6 @@ def reboot():
     except Exception as e:
         abort(500)
 
-
 @app.route('/tooloop/api/v1.0/system/poweroff', methods=['GET'])
 def poweroff():
     try:
@@ -192,6 +191,16 @@ def poweroff():
         return jsonify({ 'message' : 'Powering Off' })
     except Exception as e:
         abort(500)
+
+@app.route('/tooloop/api/v1.0/system/password', methods=['PUT'])
+def set_password():
+    if not request.form or not 'oldPassword' in request.form or not 'newPassword' in request.form:
+        abort(400)
+    try:
+        system.set_password(request.form['oldPassword'], request.form['newPassword'])
+        return jsonify({ 'message' : 'Password saved'})
+    except Exception as e:
+        abort(500, e)
 
 
 # presentation
