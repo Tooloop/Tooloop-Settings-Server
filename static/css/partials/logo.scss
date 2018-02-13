@@ -1,0 +1,62 @@
+.hex-logo {
+    font-size: 1em;
+    margin: auto;
+    width: 3.025em;
+    height: 1.25em;
+}
+
+@keyframes hexagon-fade {
+      0% { opacity: 0; }
+     20% { opacity: 1; }
+     50% { opacity: 1; }
+     70% { opacity: 0; }
+    100% { opacity: 0; }
+}
+
+.hexagon {
+    position: relative;
+    width: 1em; 
+    height: 0.577em;
+    margin: 0.289em 0;
+    background-color: silver;
+    display: inline-block;
+    margin-right: -0.75em;
+}
+.hex-logo.animated .hexagon {
+    animation-name: hexagon-fade;
+    animation-duration: 3s;
+    animation-iteration-count: infinite;
+    opacity: 0;
+}
+.hexagon:before,
+.hexagon:after {
+    content: "";
+    position: absolute;
+    width: 0;
+    border-left: 0.5em solid transparent;
+    border-right: 0.5em solid transparent;
+}
+.hexagon:before {
+    bottom: 100%;
+    border-bottom: 0.289em solid silver;
+}
+.hexagon:after {
+    top: 100%;
+    width: 0;
+    border-top: 0.289em solid silver;
+}
+.hex-logo .hexagon:nth-child(1)        { background-color:    #82328b; animation-delay: 0s}
+.hex-logo .hexagon:nth-child(1):before { border-bottom-color: #82328b; }
+.hex-logo .hexagon:nth-child(1):after  { border-top-color:    #82328b; }
+.hex-logo .hexagon:nth-child(2)        { background-color:    #941381; animation-delay: 0.1s}
+.hex-logo .hexagon:nth-child(2):before { border-bottom-color: #941381; }
+.hex-logo .hexagon:nth-child(2):after  { border-top-color:    #941381; }
+.hex-logo .hexagon:nth-child(3)        { background-color:    #a1145b; animation-delay: 0.2s}
+.hex-logo .hexagon:nth-child(3):before { border-bottom-color: #a1145b; }
+.hex-logo .hexagon:nth-child(3):after  { border-top-color:    #a1145b; }
+.hex-logo .hexagon:nth-child(4)        { background-color:    #bc1521; animation-delay: 0.3s}
+.hex-logo .hexagon:nth-child(4):before { border-bottom-color: #bc1521; }
+.hex-logo .hexagon:nth-child(4):after  { border-top-color:    #bc1521; }
+.hex-logo .hexagon:nth-child(5)        { background-color:    #e5007d; animation-delay: 0.4s}
+.hex-logo .hexagon:nth-child(5):before { border-bottom-color: #e5007d; }
+.hex-logo .hexagon:nth-child(5):after  { border-top-color:    #e5007d; }
