@@ -374,7 +374,10 @@ var hideCover = function() {
 var poweroff = function() {
     if( confirm("Are you sure, you want to power off the machine?") ) {
         
-        $.ajax({ url: "/tooloop/api/v1.0/system/poweroff" }); 
+        $.ajax({ 
+            url: "/tooloop/api/v1.0/system/poweroff",
+            timeout: 1000
+        }); 
         
         $('body').append(
             '<div id="off-black" class="off-cover"></div> \
@@ -385,12 +388,15 @@ var poweroff = function() {
 }
 
 var rebooting = false;
+var rebootTime;
 var reboot = function() {
     if( confirm("Are you sure, you want to reboot the machine?") ) {
         rebooting = true;
+        rebootTime = new Date();
         $('#cover').fadeIn(100, function(){
             $.ajax({
-                url: "/tooloop/api/v1.0/system/reboot"
+                url: "/tooloop/api/v1.0/system/reboot",
+                timeout: 1000
             }).done(function( data ) {
             });
         });
@@ -460,11 +466,19 @@ var getSystemUsage = function(doneFunction) {
     $.ajax({
         url: "/tooloop/api/v1.0/system/usage",
         timeout: 3000 // sets timeout to 3 seconds
-    }).done(function(data){
+    }).done(function(data) {
+        // recursive call
         doneFunction(data);
+        // reset rebooting flag if we receive a packet
         if (data && rebooting) {    
-            rebooting = false;
-            hideCover();
+            now = new Date();
+            // only if the reboot call was more then 10 seconds ago
+            // this way we make sure, that data packet we are receiving is
+            // still send before rebooting
+            if (now - rebootTime > 10000) {
+                rebooting = false;
+                hideCover();
+            }
         }
     }).error(function(data){
         doneFunction(null);
