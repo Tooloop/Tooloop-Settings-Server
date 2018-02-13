@@ -139,6 +139,13 @@ strong {
   display: initial;
 }
 
+#sidebar .hex-logo {
+  font-size: 1.25em;
+  position: fixed;
+  bottom: 1em;
+  left: 4em;
+}
+
 @media (max-width: $min-tablet-width) {
   #sidebar-toggle {
       display: initial;
@@ -155,8 +162,13 @@ strong {
   body.mobile-menu {
     overflow: hidden;
   }
+  
   #sidebar.mobile-menu {
     display: initial;
+  }
+
+  #sidebar .hex-logo {
+    left: calc(50% - 1.5em);
   }
 }
 
@@ -195,12 +207,6 @@ body.appsettings #sidebar a.appsettings {
   border-top: 1px solid $gray5;
   border-bottom: none;
   margin: 0;
-}
-
-#sidebar .hex-logo {
-  font-size: 1.25em;
-  position: relative;
-  top: calc(100% - 12em);
 }
 
 
