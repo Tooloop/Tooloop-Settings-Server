@@ -856,14 +856,14 @@ input.switch:checked ~ label:after
 }
 
 #off-logo {
-  opacity:0;
-  z-index: 999; 
-  position: absolute; 
-  width: 100px; 
-  top: 40%; 
-  left: calc(50% - 50px); 
-  animation-name: off-logo; 
-  animation-duration: 3s; 
-  animation-fill-mode: forwards; 
+  opacity: 0;
+  z-index: 999;
+  font-size: 2em;
+  position: absolute;
+  top: calc(50% - 1em);
+  left: calc(50% - 1.5em);
+  animation-name: off-logo;
+  animation-duration: 3s;
+  animation-fill-mode: forwards;
   animation-delay: 1s;
 }
