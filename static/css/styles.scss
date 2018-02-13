@@ -809,3 +809,60 @@ input.switch:checked ~ label:after
     width: calc(66.666% - 2em);
   }
 }
+
+// off loader_animation
+@keyframes off-white {
+    0% { opacity: 0; height: 100%; top:   0; left:   0; width: 100%; }
+   30% { opacity: 1; height: 100%; top:   0; left:   0; width: 100%; }
+   35% { opacity: 1; height: 100%; top:   0; left:   0; width: 100%; }
+   50% { opacity: 1; height:  5px; top: 50%; left:   0; width: 100%; }
+   60% { opacity: 1; height:  5px; top: 50%; left: 50%; width:  5px; }
+   80% { opacity: 1; height:  5px; top: 50%; left: 50%; width:  5px; }
+   85% { opacity: 0; height:  5px; top: 50%; left: 50%; width:  5px; }
+   90% { opacity: 1; height:  5px; top: 50%; left: 50%; width:  5px; }
+  100% { opacity: 0; height:  5px; top: 50%; left: 50%; width:  5px; }    
+}
+@keyframes off-black {
+    0% { opacity: 0; }
+   30% { opacity: 0; }
+   35% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes off-logo {
+    0% { opacity: 0.0; }
+  100% { opacity: 0.6; }
+}
+
+.off-cover {
+  height: 100%; 
+  width: 100%; 
+  position: fixed; 
+  opacity:0; 
+  animation-duration: 1s; 
+  animation-fill-mode: forwards;
+}
+
+#off-black {
+  background: black; 
+  z-index: 997; 
+  animation-name: off-black; 
+}
+
+#off-white {
+  background: white;
+  z-index: 998;
+  animation-name: off-white;
+}
+
+#off-logo {
+  opacity:0;
+  z-index: 999; 
+  position: absolute; 
+  width: 100px; 
+  top: 40%; 
+  left: calc(50% - 50px); 
+  animation-name: off-logo; 
+  animation-duration: 3s; 
+  animation-fill-mode: forwards; 
+  animation-delay: 1s;
+}

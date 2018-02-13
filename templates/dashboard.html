@@ -367,9 +367,14 @@ var hideCover = function() {
 
 var poweroff = function() {
     if( confirm("Are you sure, you want to power off the machine?") ) {
-        $.ajax({
-            url: "/tooloop/api/v1.0/system/poweroff"
-        }).done(function( data ) {});
+        
+        $.ajax({ url: "/tooloop/api/v1.0/system/poweroff" }); 
+        
+        $('body').append(
+            '<div id="off-black" class="off-cover"></div> \
+            <div id="off-white" class="off-cover"></div> \
+            <img id="off-logo" src="/static/img/tooloop_logo.png">'
+        );
     }
 }
 
