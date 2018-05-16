@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block page_styles %}
+    <link rel="prefetch" href="/static/img/box-sleeping.gif">
+{% endblock %}
+
 {% block content %}
     <div id="system-area" class="area">
 
@@ -382,13 +386,7 @@ var poweroff = function() {
         $('body').append(
             '<div id="off-black" class="off-cover"></div> \
             <div id="off-white" class="off-cover"></div> \
-            <div id="off-logo" class="hex-logo"> \
-                <div class="hexagon"></div> \
-                <div class="hexagon"></div> \
-                <div class="hexagon"></div> \
-                <div class="hexagon"></div> \
-                <div class="hexagon"></div> \
-            </div>'
+            <div id="off-logo" class="hex-logo"></div>'
         );
     }
 }

@@ -858,12 +858,14 @@ input.switch:checked ~ label:after
 #off-logo {
   opacity: 0;
   z-index: 999;
-  font-size: 2em;
   position: absolute;
-  top: calc(50% - 1em);
-  left: calc(50% - 1.5em);
+  top: calc(50% - 155px / 2);
+  left: calc(50% - 256px / 2);
   animation-name: off-logo;
   animation-duration: 3s;
   animation-fill-mode: forwards;
-  animation-delay: 1s;
+  animation-delay: 0.25s;
+  background: url('/static/img/box-sleeping.gif');
+  width: 256px;
+  height: 155px;
 }

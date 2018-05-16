@@ -1,3 +1,11 @@
+#logo {
+    position: fixed;
+    bottom: 1em;
+    left: calc(#{$sidebar-width} / 2 - 60px);
+    margin: auto;
+    width: 120px;
+}
+
 .hex-logo {
     font-size: 1em;
     margin: auto;
