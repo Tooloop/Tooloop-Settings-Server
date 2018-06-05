@@ -1,11 +1,9 @@
 # Tooloop Settings Server
 
-![](https://img.shields.io/badge/status-pre--release-red.svg)
+![](https://img.shields.io/badge/status-alpha-red.svg)
 ![](https://img.shields.io/github/license/vollstock/tooloop-settings-server.svg)
 
 A browser based settings app for [Tooloop OS](https://github.com/vollstock/tooloop-os). It’s using the [Flask framework](http://flask.pocoo.org/).
-
-It's by no means ready for public use!
 
 
 # Install
