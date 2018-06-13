@@ -340,8 +340,6 @@ var latestScreenshot;
 var updateScreenshot = function(screenshot) {
     latestScreenshot = screenshot;
     if ($("#screenshot-thumbnail").attr("src") !== latestScreenshot.thumbnail_url) {
-        // latestScreenshotThumbnail = new Image();
-        // latestScreenshotThumbnail.src = data.thumbnail_url;
         $("#screenshot-thumbnail").attr("src",latestScreenshot.thumbnail_url);
         $('#background-image').css('background-image', 'url("'+latestScreenshot.thumbnail_url+'")');
         $("#screenshot-timestamp").html('Screenshot from ' + new Date(latestScreenshot.date).toLocaleTimeString());

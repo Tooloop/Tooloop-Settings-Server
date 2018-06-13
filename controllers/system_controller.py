@@ -24,6 +24,9 @@ class System(object):
     def set_hostname(self, hostname):
         old_hostname = self.get_hostname()
 
+        # nothing to do
+        if hostname == old_hostname: return
+
         try:
             # change /etc/hostname
             self.augtool.set("/files/etc/hostname/hostname", hostname)
@@ -44,6 +47,8 @@ class System(object):
               file.write(filedata)
         except Exception as e:
             raise e
+
+        self.needs_reboot = True
 
 
     def get_ip(self):

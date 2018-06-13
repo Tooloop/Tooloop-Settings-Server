@@ -143,7 +143,11 @@ def set_hostname():
         abort(400)
     try:
         system.set_hostname(request.form['hostname'])
-        return jsonify({'message': 'Hostname saved', 'hostname': system.get_hostname()})
+        return jsonify({
+                'message': 'Hostname saved',
+                'hostname': system.get_hostname(),
+                'needsReboot': system.needs_reboot
+        })
     except Exception as e:
         abort(500)
 
