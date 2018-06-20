@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from subprocess import check_output, check_call, Popen, PIPE
-import os
+    
 import time
 import pexpect
 from utils.time_utils import *
@@ -65,11 +65,11 @@ class System(object):
     def get_hd(self):
         # get hd information
         # /dev/root        7541056 2210616   4994300  31% /
-        # RASPBERRY PI
-        # hd_info = os.popen('df | grep /dev/root').readline()
 
-        # INTEL
         hd_info = os.popen('df -B1 | grep assets').readline()
+        # if no /assets partition is available, get the whole disk
+        if hd_info == '':
+            hd_info = os.popen('df -B1 | pcregrep -M "/\n"').readline()
 
         # split string in tokens
         # ['/dev/root', '7541056', '2210616', '4994300', '31%', '/']
