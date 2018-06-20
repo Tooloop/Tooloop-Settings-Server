@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from subprocess import check_output, check_call, Popen, PIPE
-    
+import os
 import time
 import pexpect
+import fileinput
 from utils.time_utils import *
 from utils.cpu_load import CpuLoad
 
@@ -17,7 +18,9 @@ class System(object):
 
     def get_hostname(self):
         try:
-            return self.augtool.get("/files/etc/hostname/hostname")
+            file = open("/etc/hostname", "r") 
+            hostname = file.read().rstrip()
+            return hostname
         except Exception as e:
             raise
 
@@ -27,15 +30,16 @@ class System(object):
         # nothing to do
         if hostname == old_hostname: return
 
+        # change /etc/hostname
         try:
-            # change /etc/hostname
-            self.augtool.set("/files/etc/hostname/hostname", hostname)
-            self.augtool.save()
+            file = open("/etc/hostname", "w")
+            file.write(hostname)
+            file.close()
         except Exception as e:
             raise
 
+        # change /etc/hosts
         try:
-            # change /etc/hosts
             with open('/etc/hosts', 'r') as file :
               filedata = file.read()
 
