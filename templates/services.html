@@ -23,6 +23,15 @@
       </div>
     </td>
   </tr>
+  <tr>
+    <td class="label-column">Remote configuration</td>
+    <td class="value-column">
+      <div>
+        <input type="checkbox" id="remote-configuration-switch" name="remote-configuration-switch" class="switch"{% if services.remote_configuration%}checked{% endif %}/>
+        <label for="remote-configuration-switch">on / off</label>
+      </div>
+    </td>
+  </tr>
   
 
   <tr><td colspan="2"><h2>Tools</h2></td></tr>
@@ -74,12 +83,32 @@
 
     });
 
+    // Remote configuration
+    $('#remote-configuration-switch').on('change', function() {
+      var command = this.checked ? 'enable' : 'disable';
+      
+      // return if the user decides not to disable the service
+      if (!this.checked) {
+        if(!confirm("Are you sure, you want to stop the remote configuration service?\n \nYou can only re-enable it on the machine itself.")) {
+          this.checked = true;
+          return;
+        }
+      }
+
+      $.ajax({
+        url: '/tooloop/api/v1.0/services/remoteconfiguration/'+command
+      }).done(function(data) {
+        $('#remote-configuration-switch').prop('checked', data.remote_configuration);
+      }).error(function(e){
+        console.log("error " + e);
+      });
+    });
+
     // screenshots
     $('#screenshots-switch').on('change', function() {
       var command = this.checked ? 'enable' : 'disable';
       $.ajax({
         url: '/tooloop/api/v1.0/services/screenshots/'+command
-        // TODO: also change parameters
       }).done(function() {
         $.ajax({
           url: '/tooloop/api/v1.0/services/screenshots'

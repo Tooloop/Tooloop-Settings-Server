@@ -8,7 +8,7 @@
     :license: Beerware, see LICENSE for more details.
 """
 
-from flask import Flask, jsonify, render_template, request, abort, send_from_directory
+from flask import Flask, jsonify, render_template, request, after_this_request, abort, send_from_directory
 from jinja2 import ChoiceLoader, FileSystemLoader
 
 from controllers.system_controller import System
@@ -22,17 +22,21 @@ import augeas
 import time
 
 from pprint import pprint
+from subprocess import call
 
 # ------------------------------------------------------------------------------
 # INIT
 # ------------------------------------------------------------------------------
 
 app = Flask(__name__)
+app.config.from_pyfile('config.cfg')
+
+
 augtool = augeas.Augeas()
 system = System(augtool)
 presentation = Presentation()
 appcenter = AppCenter(presentation, app)
-services = Services()
+services = Services(app)
 screenshots = Screenshots()
 
 # let jinja also look in the installed_app folder
@@ -278,7 +282,15 @@ def check_available_apps():
 
 @app.route('/tooloop/api/v1.0/appcenter/install/<string:name>', methods=['GET'])
 def install_app(name):
+    @after_this_request
+    def add_header(response):
+        response.headers['X-Foo'] = 'Parachute'
+        return response
+
     appcenter.install(name)
+
+    # call(['systemctl','restart','tooloop-settings-server'])
+
     try:
         return jsonify(appcenter.get_installed_app().to_dict())
     except Exception as e:
@@ -290,6 +302,7 @@ def install_app(name):
 @app.route('/tooloop/api/v1.0/services', methods=['GET'])
 def get_services_status():
     return jsonify(services.get_status())
+
 
 @app.route('/tooloop/api/v1.0/services/vnc', methods=['GET'])
 def vnc_status():
@@ -305,6 +318,7 @@ def disable_vnc():
     services.disable_vnc()
     return jsonify({ 'message' : 'VNC disabled' })
 
+
 @app.route('/tooloop/api/v1.0/services/ssh', methods=['GET'])
 def ssh_status():
     return jsonify({'ssh':services.is_ssh_running()})
@@ -318,6 +332,22 @@ def enable_ssh():
 def disable_ssh():
     services.disable_ssh()
     return jsonify({ 'message' : 'SSH disabled' })
+
+
+@app.route('/tooloop/api/v1.0/services/remoteconfiguration', methods=['GET'])
+def remote_configuration_status():
+    return jsonify({'remote_configuration':services.is_remote_configuration_running()})
+
+@app.route('/tooloop/api/v1.0/services/remoteconfiguration/enable', methods=['GET'])
+def enable_remote_configuration():
+    services.enable_remote_configuration()
+    return jsonify({ 'message' : 'Remote configuration enabled' })
+
+@app.route('/tooloop/api/v1.0/services/remoteconfiguration/disable', methods=['GET'])
+def disable_remote_configuration():
+    services.disable_remote_configuration()
+    return jsonify({ 'message' : 'Remote configuration disabled' })
+
 
 @app.route('/tooloop/api/v1.0/services/screenshots', methods=['GET'])
 def screenshot_service_status():
@@ -363,6 +393,6 @@ def grab_screenshot():
 if __name__ == "__main__":
     app.run(
         debug=True,
-        host="0.0.0.0",
+        host=app.config['HOST'],
         port=80
     )
