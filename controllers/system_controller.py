@@ -221,7 +221,11 @@ class System(object):
         output = ps.stdout.read()
         ps.stdout.close()
         ps.wait()
-        return output.split()[-1]
+        try:
+            state = output.split()[-1]
+        except IndexError as e:
+            state = 'unknown'
+        return state
 
     def set_display_state(self, state):
         if not state.lower() in ['on', 'off', 'standby']:
