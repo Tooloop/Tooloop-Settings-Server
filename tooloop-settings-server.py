@@ -238,7 +238,7 @@ def set_audio_mute():
         abort(500, e)
 
 
-@app.route('/tooloop/api/v1.0/presentation/displaystate', methods=['GET'])
+@app.route('/tooloop/api/v1.0/system/displaystate', methods=['GET'])
 def get_display_state():
     try:
         state = system.get_display_state()
@@ -246,7 +246,7 @@ def get_display_state():
     except Exception as e:
         abort(500,e)
 
-@app.route('/tooloop/api/v1.0/presentation/displaystate', methods=['PUT'])
+@app.route('/tooloop/api/v1.0/system/displaystate', methods=['PUT'])
 def set_display_state():
     if not request.form or not 'state' in request.form:
         abort(400)

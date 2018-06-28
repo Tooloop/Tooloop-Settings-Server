@@ -478,7 +478,7 @@ var setDisplayState = function(state, handleData) {
     $.ajax({
         method: 'PUT',
         data: {'state' : state},
-        url: "/tooloop/api/v1.0/presentation/displaystate"
+        url: "/tooloop/api/v1.0/system/displaystate"
     }).done(function(data){
         handleData(data);
     });
@@ -486,7 +486,7 @@ var setDisplayState = function(state, handleData) {
 
 var getDisplayState = function(handleData) {
     $.ajax({
-        url: "/tooloop/api/v1.0/presentation/displaystate"
+        url: "/tooloop/api/v1.0/system/displaystate"
     }).done(function(data){
         handleData(data);
     });
