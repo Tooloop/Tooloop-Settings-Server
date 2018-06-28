@@ -6,7 +6,7 @@ if [ $EUID != 0 ]; then
     exit 1
 fi
 
-apt-get install -y \
+apt install -y \
     python-pip \
     python-augeas \
     python-crontab \
