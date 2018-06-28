@@ -58,11 +58,11 @@ def render_dashboard():
         page = 'dashboard', 
         installed_app = appcenter.get_installed_app(), 
         app_controller = appcenter.get_installed_app_controller(),
-        screenshot_service_running = services.is_screenshot_service_running(),
         hostname = system.get_hostname(),
+        display_state = system.get_display_state(),
+        audio_volume = system.get_audio_volume(),
         uptime = time_to_ISO_string(system.get_uptime()),
-        vnc_running = services.is_vnc_running(),
-        ssh_running = services.is_ssh_running(),
+        screenshot_service_running = services.is_screenshot_service_running()
     )
 
 @app.route("/network")
@@ -139,7 +139,7 @@ def get_hostname():
     try:
         return jsonify({'hostname':system.get_hostname()})
     except Exception as e:
-        abort(500)
+        abort(500, e)
 
 @app.route('/tooloop/api/v1.0/system/hostname', methods=['PUT'])
 def set_hostname():
@@ -153,7 +153,7 @@ def set_hostname():
                 'needsReboot': system.needs_reboot
         })
     except Exception as e:
-        abort(500)
+        abort(500, e)
 
 @app.route('/tooloop/api/v1.0/system/usage', methods=['GET'])
 def get_usage():
@@ -190,7 +190,7 @@ def reboot():
         system.reboot()
         return jsonify({ 'message' : 'Rebooting' })
     except Exception as e:
-        abort(500)
+        abort(500, e)
 
 @app.route('/tooloop/api/v1.0/system/poweroff', methods=['GET'])
 def poweroff():
@@ -198,7 +198,7 @@ def poweroff():
         system.poweroff()
         return jsonify({ 'message' : 'Powering Off' })
     except Exception as e:
-        abort(500)
+        abort(500, e)
 
 @app.route('/tooloop/api/v1.0/system/password', methods=['PUT'])
 def set_password():
@@ -207,6 +207,53 @@ def set_password():
     try:
         system.set_password(request.form['oldPassword'], request.form['newPassword'])
         return jsonify({ 'message' : 'Password saved'})
+    except Exception as e:
+        abort(500, e)
+
+@app.route('/tooloop/api/v1.0/system/audiovolume', methods=['GET'])
+def get_audio_volume():
+    return jsonify(system.get_audio_volume())
+
+@app.route('/tooloop/api/v1.0/system/audiovolume', methods=['PUT'])
+def set_audio_volume():
+    if not request.form or not 'volume' in request.form:
+        abort(400)
+    try:
+        volume = int(float(request.form['volume']))
+        system.set_audio_volume(volume)
+        return jsonify({'message' : 'Volume set to ' + str(volume)})
+    except Exception as e:
+        raise e
+
+@app.route('/tooloop/api/v1.0/system/audiomute', methods=['PUT'])
+def set_audio_mute():
+    if not request.form or not 'mute' in request.form:
+        abort(400)
+    try:
+        mute = request.form['mute'].lower() == 'true' or request.form['mute'] == '1'
+        system.set_audio_mute(mute)
+        message = 'muted' if mute else 'unmuted'
+        return jsonify({'message' : 'Audio' + message})
+    except Exception as e:
+        abort(500, e)
+
+
+@app.route('/tooloop/api/v1.0/presentation/displaystate', methods=['GET'])
+def get_display_state():
+    try:
+        state = system.get_display_state()
+        return jsonify({ 'Display' : state })
+    except Exception as e:
+        abort(500,e)
+
+@app.route('/tooloop/api/v1.0/presentation/displaystate', methods=['PUT'])
+def set_display_state():
+    if not request.form or not 'state' in request.form:
+        abort(400)
+    try:
+        system.set_display_state(request.form['state'])
+        state = system.get_display_state()
+        return jsonify({ 'Display' : state })
     except Exception as e:
         abort(500, e)
 
@@ -219,7 +266,7 @@ def start_presentation():
     return_code = presentation.start()
     return jsonify({ 'message' : 'Called start script with return code '+str(return_code) })
     # except Exception as e:
-    #     abort(500)
+    #     abort(500, e)
 
 @app.route('/tooloop/api/v1.0/presentation/stop', methods=['GET'])
 def stop_presentation():
@@ -227,7 +274,7 @@ def stop_presentation():
     try:
         return jsonify({ 'message' : 'Called stop script with return code '+str(return_code) })
     except Exception as e:
-        abort(500)
+        abort(500, e)
 
 @app.route('/tooloop/api/v1.0/presentation/reset', methods=['GET'])
 def reset_presentation():
@@ -235,31 +282,8 @@ def reset_presentation():
         return_code = presentation.reset()
         return jsonify({ 'message' : 'Called reset script with return code '+str(return_code) })
     except Exception as e:
-        abort(500)
+        abort(500, e)
 
-@app.route('/tooloop/api/v1.0/presentation/displayon', methods=['GET'])
-def display_on():
-    try:
-        state = presentation.display_on()
-        return jsonify({ 'Display' : state })
-    except Exception as e:
-        abort(500)
-
-@app.route('/tooloop/api/v1.0/presentation/displayoff', methods=['GET'])
-def display_off():
-    try:
-        state = presentation.display_off()
-        return jsonify({ 'Display' : state })
-    except Exception as e:
-        abort(500)
-
-@app.route('/tooloop/api/v1.0/presentation/displaystate', methods=['GET'])
-def display_state():
-    try:
-        state = presentation.check_display_state()
-        return jsonify({ 'Display' : state })
-    except Exception as e:
-        abort(500)
 
 # appcenter
 
@@ -294,7 +318,7 @@ def install_app(name):
     try:
         return jsonify(appcenter.get_installed_app().to_dict())
     except Exception as e:
-        abort(500)
+        abort(500, e)
 
 
 # services
@@ -383,7 +407,7 @@ def grab_screenshot():
     try:
         return jsonify(screenshots.grab_screenshot())
     except Exception as e:
-        abort(500)
+        abort(500, e)
 
 
 # ------------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from subprocess import check_output, check_call, Popen, PIPE
+from subprocess import check_output, check_call, Popen, PIPE, call
 import os
 import time
 import pexpect
@@ -191,3 +191,40 @@ class System(object):
             'needs_reboot': self.needs_reboot,
             'hostname': self.get_hostname()
             }
+
+    def get_audio_volume(self):
+        try:
+            for line in check_output('su tooloop -c "pactl --server=/run/user/1000/pulse/native list sinks"', shell=True).split('\n'):
+                # find the output lint with the volume
+                if 'Volume' in line and not 'Base' in line:
+                    # find the first channels’ volume as we are ignoring separate channels
+                    for token in line.split():
+                        if '%' in token:
+                            return int(token.rstrip('%'))
+        except Exception as e:
+            return 0
+
+    def set_audio_volume(self, volume):
+        call('su tooloop -c "pactl --server=/run/user/1000/pulse/native set-sink-volume 0 '+str(volume)+'%"', shell=True)
+        # call(['pactl', '--server=/run/user/1000/pulse/native', 'set-sink-volume', '0', str(volume)+'%'])
+
+    def set_audio_mute(self, mute):
+        mute_param = '1' if mute else '0'
+        call('su tooloop -c "pactl --server=/run/user/1000/pulse/native set-sink-mute 0 '+mute_param+'"', shell=True)
+        # call(['pactl', '--server=/run/user/1000/pulse/native', 'set-sink-mute', '0', mute_param])
+
+
+
+    def get_display_state(self):
+        # check result
+        ps = Popen('xset q | grep Monitor', shell=True, stdout=PIPE)
+        output = ps.stdout.read()
+        ps.stdout.close()
+        ps.wait()
+        return output.split()[-1]
+
+    def set_display_state(self, state):
+        if not state.lower() in ['on', 'off', 'standby']:
+            raise ValueError("Display state can only be one of 'on', 'off' or 'standby'")
+        call(['xset', 'dpms', 'force', state.lower()])
+        return self.get_display_state()

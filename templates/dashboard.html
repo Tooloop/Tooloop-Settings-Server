@@ -8,7 +8,7 @@
     <div id="system-area" class="area">
 
         {% if screenshot_service_running %}
-            <div id="screenshot">
+            <div id="screenshot" class="{{display_state|lower}}">
                 <a onclick="showScreenshotPanel()">
                     <img id="screenshot-thumbnail" src="/static/img/placeholder.png" />
                     <div id="screenshot-timestamp"></div>
@@ -45,14 +45,27 @@
             </tr>
             <tr>
                 <td class="label-column">Display</td>
-                <td class="value-column">
-                    <span style="white-space: nowrap;">
-                        <button onclick="displayOn()">On</button>
-                        <button onclick="displayOff()">Off</button>
-                    </span>
+                <td class="value-column" style="font-size: 0.75rem;">
+                    <div>
+                        <input id="display-switch" name="display-switch" class="switch" {% if display_state|lower == 'on' %}checked=""{% endif %} type="checkbox">
+                        <label for="display-switch">&nbsp;</label>
+                    </div>
                 </td>
             </tr>
-            {% if ssh_running or vnc_running  %}
+            <tr>
+                <td class="label-column">Volume</td>
+                <td class="value-column" style="font-size: 0.75rem;">
+                    <div style="float: left; margin: 0.25rem 1em 0 0;">
+                        <input id="volume-slider" name="volume-slider" type="range" min="0" max="150" value="{{audio_volume}}" style="margin-left: 0em;">
+                        <label for="volume-slider" id="volume-label" style="width: 3rem; display: inline-block;">{{audio_volume}} %</label>
+                    </div>
+                    <div style="float: left;">
+                        <input id="volume-switch" name="volume-switch" class="switch" checked="" type="checkbox">
+                        <label for="volume-switch">&nbsp;</label>
+                    </div>
+                </td>
+            </tr>
+            {# {% if ssh_running or vnc_running %}
             <tr>
                 <td class="label-column">Remote access</td>
                 <td class="value-column">
@@ -62,13 +75,11 @@
                     </span>
                 </td>
             </tr>
-            {% endif %}
-            {%if false %}
-            <tr>
+            {% endif %} #}
+            {# <tr>
                 <td class="label-column">Security updates</td>
                 <td>4 <button onclick="" style="margin-left:1em;" class="discreet">Install updates</button></td>
-            </tr>
-            {% endif %}
+            </tr> #}
         </table>
     </div> <!-- end system-area -->
 
@@ -130,9 +141,9 @@
 
 $(document).ready(function() {
 
-    // ---------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Uptime
-    // ---------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     var uptime = new Date('{{uptime}}');
     $('#uptime').html(
         'Running since '
@@ -142,9 +153,9 @@ $(document).ready(function() {
 
 
     {% if screenshot_service_running %}
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Screenshots
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // load thumbnail
     loadLatestThumbnail();
     // do it again every x seconds
@@ -152,16 +163,40 @@ $(document).ready(function() {
     {% endif %}
 
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Display State
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    $('#display-switch').on('change', function() {
+        state = this.checked ? 'on' : 'off';
+        setDisplayState(state, function(data) {
+            $('#screenshot').removeClass();
+            if (data.Display.toLowerCase() !== 'on'){
+                $('#screenshot').addClass(data.Display.toLowerCase());
+            }
+        });
+    });
 
-    getDisplayState();
+    // -------------------------------------------------------------------------
+    // Volume
+    // -------------------------------------------------------------------------
+    // get widgets
+    var volumeSlider = $('#volume-slider');
+    var volumeLabel = $('#volume-label');
 
+    // setup event handlers
+    volumeSlider.on('input', function() {
+        volumeLabel.html(volumeSlider.val() + " %");
+        setAudioVolume($(this).val());
+    });
 
-    // -----------------------------------------------------------------------------
+    $('#volume-switch').on('change', function() {
+        setAudioMute(!this.checked);
+        volumeSlider.prop("disabled", !this.checked);
+    });
+
+    // -------------------------------------------------------------------------
     // Graphs
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     var commonGraphOptions = {
         grid: { borderWidth: 0, borderColor: '#ccc', backgroundColor: "white", hoverable: true, autoHighlight: false, margin:0, labelMargin: 0, axisMargin: 0},
@@ -340,6 +375,8 @@ var latestScreenshot;
 var updateScreenshot = function(screenshot) {
     latestScreenshot = screenshot;
     if ($("#screenshot-thumbnail").attr("src") !== latestScreenshot.thumbnail_url) {
+        // latestScreenshotThumbnail = new Image();
+        // latestScreenshotThumbnail.src = data.thumbnail_url;
         $("#screenshot-thumbnail").attr("src",latestScreenshot.thumbnail_url);
         $('#background-image').css('background-image', 'url("'+latestScreenshot.thumbnail_url+'")');
         $("#screenshot-timestamp").html('Screenshot from ' + new Date(latestScreenshot.date).toLocaleTimeString());
@@ -437,32 +474,53 @@ var grabScreenshot = function() {
     });
 }
 
-var displayOn = function() {
+var setDisplayState = function(state, handleData) {
     $.ajax({
-        url: "/tooloop/api/v1.0/presentation/displayon"
-    }).done(function(data){setDisplayState(data)});
+        method: 'PUT',
+        data: {'state' : state},
+        url: "/tooloop/api/v1.0/presentation/displaystate"
+    }).done(function(data){
+        handleData(data);
+    });
 }
 
-var displayOff = function() {
-    $.ajax({
-        url: "/tooloop/api/v1.0/presentation/displayoff"
-    }).done(function(data){setDisplayState(data)});
-}
-
-
-var getDisplayState = function() {
+var getDisplayState = function(handleData) {
     $.ajax({
         url: "/tooloop/api/v1.0/presentation/displaystate"
-    }).done(function(data){setDisplayState(data)});
+    }).done(function(data){
+        handleData(data);
+    });
 }
 
-// TODO: read initially after page load and define REST interace for that
-var setDisplayState = function(data) {
-    $('#screenshot').removeClass();
-    if (data.Display.toLowerCase() !== 'on'){
-        $('#screenshot').addClass(data.Display.toLowerCase());
-    }
+var getAudioVolume = function(handleData) {
+    $.ajax({
+        method: "GET",
+        url: "/tooloop/api/v1.0/system/audiovolume"
+    }).done(function( data ) {
+        handleData(data);
+    })
 }
+
+var setAudioVolume = function(volume) {
+    $.ajax({
+        method: "PUT",
+        data: { "volume" : volume },
+        url: "/tooloop/api/v1.0/system/audiovolume"
+    }).done(function( data ) {
+        // console.log(data);
+    })
+}
+
+var setAudioMute = function(mute) {
+    $.ajax({
+        method: "PUT",
+        data: { "mute" : mute },
+        url: "/tooloop/api/v1.0/system/audiomute"
+    }).done(function( data ) {
+        console.log(data);
+    })
+}
+
 
 var getSystemUsage = function(doneFunction) {
     $.ajax({
