@@ -47,7 +47,7 @@
                 <td class="label-column">Display</td>
                 <td class="value-column" style="font-size: 0.75rem;">
                     <div>
-                        <input id="display-switch" name="display-switch" class="switch" {% if display_state|lower == 'on' %}checked=""{% endif %} type="checkbox">
+                        <input id="display-switch" name="display-switch" class="switch" {% if display_state|lower == 'on' or display_state|lower == 'unknown'%}checked=""{% endif %} type="checkbox">
                         <label for="display-switch">&nbsp;</label>
                     </div>
                 </td>
