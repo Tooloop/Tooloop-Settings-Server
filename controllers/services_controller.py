@@ -10,21 +10,19 @@ class Services(object):
 
 
     def is_vnc_running(self):
-        ps = Popen('systemctl status x11vnc | grep "active (running)"', shell=True, stdout=PIPE)
+        ps = Popen('su tooloop -c "systemctl --user status x11vnc" | grep "active (running)"', shell=True, stdout=PIPE)
         output = ps.stdout.read()
         ps.stdout.close()
         ps.wait()
         return output != ""
 
     def enable_vnc(self):
-        call(['systemctl','enable','x11vnc'])
-        call(['systemctl','start','x11vnc'])
-        pass
+        call('su tooloop -c "systemctl --user enable x11vnc.service"', shell=True)
+        call('su tooloop -c "systemctl --user start x11vnc.service"', shell=True)
 
     def disable_vnc(self):
-        call(['systemctl','disable','x11vnc'])
-        call(['systemctl','stop','x11vnc'])
-        pass
+        call('su tooloop -c "systemctl --user disable x11vnc.service"', shell=True)
+        call('su tooloop -c "systemctl --user stop x11vnc.service"', shell=True)
 
 
     def is_ssh_running(self):
