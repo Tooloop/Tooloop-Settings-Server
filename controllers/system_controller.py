@@ -15,6 +15,17 @@ class System(object):
         self.augtool = augtool
         self.cpu_load = CpuLoad()
         self.needs_reboot = False
+        self.startup_schedule = {
+            'enabled' : False,
+            'weekdays' : [],
+            'time' : {'hours':8, 'minutes':0}
+        }
+        self.shutdown_schedule = {
+            'enabled' : False,
+            'type': 'poweroff',
+            'weekdays' : [],
+            'time' : {'hours':20, 'minutes':0}
+        }
 
     def get_hostname(self):
         try:
@@ -206,12 +217,19 @@ class System(object):
 
     def set_audio_volume(self, volume):
         call('su tooloop -c "pactl --server=/run/user/1000/pulse/native set-sink-volume 0 '+str(volume)+'%"', shell=True)
-        # call(['pactl', '--server=/run/user/1000/pulse/native', 'set-sink-volume', '0', str(volume)+'%'])
 
     def set_audio_mute(self, mute):
         mute_param = '1' if mute else '0'
         call('su tooloop -c "pactl --server=/run/user/1000/pulse/native set-sink-mute 0 '+mute_param+'"', shell=True)
-        # call(['pactl', '--server=/run/user/1000/pulse/native', 'set-sink-mute', '0', mute_param])
+
+    def get_audio_mute(self):
+        try:
+            for line in check_output('su tooloop -c "pactl --server=/run/user/1000/pulse/native list sinks"', shell=True).split('\n'):
+                if 'Mute' in line:
+                    return 'yes' in line
+        except Exception as e:
+            raise
+
 
 
 
@@ -232,3 +250,35 @@ class System(object):
             raise ValueError("Display state can only be one of 'on', 'off' or 'standby'")
         call(['xset', 'dpms', 'force', state.lower()])
         return self.get_display_state()
+
+
+    def get_startup_schedule(self):
+        return self.startup_schedule
+
+    def set_startup_schedule(self, schedule):
+        if 'enabled' in schedule:
+            self.startup_schedule['enabled'] = schedule['enabled']
+        if 'weekdays' in schedule:
+            self.startup_schedule['weekdays'] = schedule['weekdays']
+        if 'time' in schedule:
+            if 'hours' in schedule['time']:
+                self.startup_schedule['time']['hours'] = int(schedule['time']['hours'])
+            if 'minutes' in schedule['time']:
+                self.startup_schedule['time']['minutes'] = int(schedule['time']['minutes'])
+
+    def get_shutdown_schedule(self):
+        return self.shutdown_schedule
+
+    def set_shutdown_schedule(self, schedule):
+        if 'enabled' in schedule:
+            self.shutdown_schedule['enabled'] = schedule['enabled']
+        if 'weekdays' in schedule:
+            self.shutdown_schedule['weekdays'] = schedule['weekdays']
+        if 'time' in schedule:
+            if 'hours' in schedule['time']:
+                self.shutdown_schedule['time']['hours'] = int(schedule['time']['hours'])
+            if 'minutes' in schedule['time']:
+                self.shutdown_schedule['time']['minutes'] = int(schedule['time']['minutes'])
+        if 'type' in schedule:
+            if schedule['type'] in ['blackout', 'poweroff']:
+                self.shutdown_schedule['type'] = schedule['type']

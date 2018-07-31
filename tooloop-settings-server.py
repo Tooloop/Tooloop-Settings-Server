@@ -56,10 +56,11 @@ app.jinja_loader = template_loader
 def render_dashboard():
     return render_template('dashboard.html', 
         page = 'dashboard', 
-        installed_app = appcenter.get_installed_app(), 
+        installed_app = appcenter.get_installed_app(),
         app_controller = appcenter.get_installed_app_controller(),
         hostname = system.get_hostname(),
         display_state = system.get_display_state(),
+        audio_mute = system.get_audio_mute(),
         audio_volume = system.get_audio_volume(),
         uptime = time_to_ISO_string(system.get_uptime()),
         screenshot_service_running = services.is_screenshot_service_running()
@@ -98,10 +99,16 @@ def render_services():
 @app.route("/system")
 def render_system():
     return render_template('system.html', 
-        page='system', 
+        page='system',
         installed_app = appcenter.get_installed_app(),
+        os_version = "0.9 alpha",
         hostname = system.get_hostname(),
         ip_address = system.get_ip(),
+        uptime = time_to_ISO_string(system.get_uptime()),
+        ssh_running = services.is_ssh_running(),
+        vnc_running = services.is_vnc_running(),
+        startup_schedule = system.get_startup_schedule(),
+        shutdown_schedule = system.get_shutdown_schedule(),
     )
 
 
@@ -225,6 +232,10 @@ def set_audio_volume():
     except Exception as e:
         raise e
 
+@app.route('/tooloop/api/v1.0/system/audiomute', methods=['GET'])
+def get_audio_mute():
+    return json.jsonify(system.get_audio_mute())
+
 @app.route('/tooloop/api/v1.0/system/audiomute', methods=['PUT'])
 def set_audio_mute():
     if not request.form or not 'mute' in request.form:
@@ -256,6 +267,43 @@ def set_display_state():
         return jsonify({ 'Display' : state })
     except Exception as e:
         abort(500, e)
+
+@app.route('/tooloop/api/v1.0/system/startupschedule', methods=['GET'])
+def get_startup_schedule():
+    try:
+        return jsonify(system.get_startup_schedule())
+    except Exception as e:
+        abort(500, e)
+
+@app.route('/tooloop/api/v1.0/system/startupschedule', methods=['PUT'])
+def set_startup_schedule():
+    if not request.get_json():
+        abort(400)
+    try:
+        system.set_startup_schedule(request.get_json())
+        return jsonify({ 'schedule' : system.get_startup_schedule() })
+    except Exception as e:
+      abort(500, e)
+
+@app.route('/tooloop/api/v1.0/system/shutdownschedule', methods=['GET'])
+def get_shutdown_schedule():
+    try:
+        return jsonify(system.get_shutdown_schedule())
+    except Exception as e:
+        abort(500, e)
+
+@app.route('/tooloop/api/v1.0/system/shutdownschedule', methods=['PUT'])
+def set_shutdown_schedule():
+    if not request.get_json():
+        abort(400)
+    try:
+        system.set_shutdown_schedule(request.get_json())
+        return jsonify({ 'schedule' : system.get_shutdown_schedule() })
+    except Exception as e:
+      abort(500, e)
+
+
+
 
 
 # presentation

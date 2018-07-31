@@ -1,19 +1,19 @@
 {% extends "base.html" %}
 
 {% block content %}
-<table class="settings-table">
-    <tr>
-        <td colspan="2" style="padding: 2em 0; text-align: center;">
-            <p><img src="/static/img/tooloop_logo.png" style="width:100%; max-width:240px;"/></p>
+<div id="system-area" class="area" style="padding: 2em 0; text-align: center;">
             <h1>Tooloop OS</h1>
-            <span class="gray">{{osVersion}}</span>
-        </td>
-    </tr>
+            <span class="gray">{{os_version}}</span>
+</div>
+<table class="settings-table">
+    {# ---------------------------------------------------------------------- #}
+    {# System #}
+    {# ---------------------------------------------------------------------- #}
     <tr><td colspan="2"><h2>System</h2></td></tr>
     <tr>
         <td class="label-column">Name</td>
         <td class="value-column">
-            <form id="hostname-form" style="float: left;">
+            <form id="hostname-form">
                 <input type="text" id="hostname-input" value="{{hostname}}">
                 <button type="submit">Save</button>
             </form>
@@ -22,16 +22,133 @@
             <td class="label-column">IP address</td>
             <td class="value-column">{{ ip_address }}</td>
         </tr>
+        <tr>
+            <td class="label-column top">Uptime</td>
+            <td class="value-column"><span id="uptime"></span ></td>
+        </tr>
+        {% if ssh_running or vnc_running %}
+        <tr>
+            <td class="label-column">Remote access</td>
+            <td class="value-column">
+                <span style="white-space: nowrap;">
+                    {% if ssh_running %}<button onclick="document.location='ssh://tooloop@{{ip_address}}'">SSH</button>{% endif %}
+                    {% if vnc_running %}<button onclick="document.location='vnc://{{ip_address}}'">Screen sharing</button>{% endif %}
+                </span>
+            </td>
+        </tr>
+        {% endif %}
+        {# <tr>
+            <td class="label-column">Security updates</td>
+            <td>4 <button onclick="" style="margin-left:1em;" class="discreet">Install updates</button></td>
+        </tr> #}
     </tr>
-    <tr><td colspan="2"><h2>Change password</h2></td></tr>
-
+    {# ---------------------------------------------------------------------- #}
+    {# Schedule #}
+    {# ---------------------------------------------------------------------- #}
+    <tr><td colspan="2"><h2>Schedule runtime</h2></td></tr>
     <tr>
-        <td class="label-column"></td>
+        <td class="label-column hidden_mobile"></td>
+        <td class="value-column">
+            <div id="startup-schedule-widget">
+                <input 
+                    type="checkbox"
+                    {% if startup_schedule.enabled %}checked{% endif %}
+                    id="startup-switch" 
+                    name="startup-switch" 
+                    class="switch">
+                <label for="startup-switch">&nbsp;</label>
+                Start up
+                <div style="margin: 0.5rem 0 2rem 3.55rem;">
+                    every&nbsp;
+                    <div id="startup-weekdays" style="display:inline;">
+                        {% set weekdays = [ {'Mo':'Monday'}, {'Tu':'Tuesday'}, {'We':'Wednesday'}, {'Th':'Thursday'}, {'Fr':'Friday'}, {'Sa':'Saturday'}, {'Su':'Sunday'} ] %}
+                        {% for day in weekdays %}
+                            {% set outer_loop = loop %}
+                            {% for key, value in day.items() %}
+                                <input 
+                                    type="checkbox" 
+                                    {% if outer_loop.index0 in startup_schedule.weekdays %}checked{% endif %}
+                                    {% if not startup_schedule.enabled %}disabled{% endif %}
+                                    id="startup-{{value|lower}}-toggle-button" 
+                                    name="startup-{{value|lower}}-toggle-button" 
+                                    class="toggle-button">
+                                <label for="startup-{{value|lower}}-toggle-button">{{key}}</label>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                    &nbsp;at&nbsp;
+                    <select id="startup-time-hours-select"{% if not startup_schedule.enabled %} disabled{% endif %}>
+                        {% for hours in range(0,24) %}
+                            <option value="{{hours}}"{% if startup_schedule.time.hours == hours %} selected{% endif %}>{{ '%02d' % hours }}</option>
+                        {% endfor %}
+                    </select>
+                    :
+                    <select id="startup-time-minutes-select"{% if not startup_schedule.enabled %} disabled{% endif %}>
+                        {% for minutes in range(0,12) %}
+                            <option value="{{minutes*5}}"{% if (startup_schedule.time.minutes/5) == minutes %} selected{% endif %}>{{ '%02d' % (minutes*5) }}</option>
+                        {% endfor %}
+                    </select>.
+                </div>
+            </div>
+            <div id="shutdown-schedule-widget">
+                <input 
+                    type="checkbox"
+                    {% if shutdown_schedule.enabled %}checked{% endif %}
+                    id="shutdown-switch" 
+                    name="shutdown-switch" 
+                    class="switch">
+                <label for="shutdown-switch">&nbsp;</label>
+                <select id="shutdown-type-select"{% if not shutdown_schedule.enabled %} disabled{% endif %}>
+                    <option value="poweroff"{% if shutdown_schedule.type == 'poweroff' %} selected{% endif %}>Power off</option>
+                    <option value="blackout"{% if shutdown_schedule.type == 'blackout' %} selected{% endif %}>Black out</option>
+                </select>
+                <div style="margin: 0.5rem 0 0 3.55rem;">
+                    every&nbsp;
+                    <div id="shutdown-weekdays" style="display:inline;">
+                        {% for day in weekdays %}
+                            {% set outer_loop = loop %}
+                            {% for key, value in day.items() %}
+                                <input 
+                                    type="checkbox" 
+                                    {% if outer_loop.index0 in shutdown_schedule.weekdays %}checked{% endif %}
+                                    {% if not shutdown_schedule.enabled %}disabled{% endif %}
+                                    id="shutdown-{{value|lower}}-toggle-button" 
+                                    name="shutdown-{{value|lower}}-toggle-button" 
+                                    class="toggle-button">
+                                <label for="shutdown-{{value|lower}}-toggle-button">{{key}}</label>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                    &nbsp;at&nbsp;
+                    <select id="shutdown-time-hours-select"{% if not shutdown_schedule.enabled %} disabled{% endif %}>
+                        {% for hours in range(0,24) %}
+                            <option value="{{hours}}"{% if shutdown_schedule.time.hours == hours %} selected{% endif %}>{{ '%02d' % hours }}</option>
+                        {% endfor %}
+                    </select>
+                    :
+                    <select id="shutdown-time-minutes-select"{% if not shutdown_schedule.enabled %} disabled{% endif %}>
+                        {% for minutes in range(0,12) %}
+                            <option value="{{minutes*5}}"{% if (shutdown_schedule.time.minutes/5) == minutes %} selected{% endif %}>{{ '%02d' % (minutes*5) }}</option>
+
+                        {% endfor %}
+                    </select>.
+                </div>
+            </div>
+        </td>
+    </tr>
+    {# ---------------------------------------------------------------------- #}
+    {# Pasword #}
+    {# ---------------------------------------------------------------------- #}
+    </table>
+    <table class="settings-table">
+    <tr><td colspan="2"><h2>Change password</h2></td></tr>
+    <tr>
+        <td class="label-column hidden_mobile"></td>
         <td class="value-column">
             <form id="password-form">
-                <p><input type="password" id="old-password" name="old-password"/> <label for="old-password">Old password</label></p>
-                <p><input type="password" id="new-password" name="new-password"/> <label for="new-password">New password</label></p>
-                <p><input type="password" id="repeat-new-password" name="repeat-new-password" /> <label for="repeat-new-password">Repeat new password</label></p>
+                <input type="password" id="old-password" name="old-password"/> <label for="old-password">Old password</label><br/>
+                <input type="password" id="new-password" name="new-password"/> <label for="new-password">New password</label><br/>
+                <input type="password" id="repeat-new-password" name="repeat-new-password" /> <label for="repeat-new-password">Repeat new password</label><br/>
                 <button type="submit">Save</button>
             </form>
         </td>
@@ -43,7 +160,19 @@
     {% block page_footer_scripts %}
 
     <script type="text/javascript">
-
+        // ---------------------------------------------------------------------
+        // Uptime
+        // ---------------------------------------------------------------------
+        var uptime = new Date('{{uptime}}');
+        $('#uptime').html(
+            'Running since '
+            + (uptime.toDateString() == new Date().toDateString() ? '' : uptime.toLocaleDateString() + ', ')
+            + uptime.toLocaleTimeString()
+        );
+    
+        // ---------------------------------------------------------------------
+        // Hostname
+        // ---------------------------------------------------------------------
         $('#hostname-form').on('submit', function(event) {
             event.preventDefault();
 
@@ -55,13 +184,76 @@
                 url: "/tooloop/api/v1.0/system/hostname"
             }).done(function( data ) {
                 displayConfirmFeedback(feedback, data.message);
-            }).error(function( jqXHR, textStatus, errorThrown ) {
+            }).fail(function( jqXHR, textStatus, errorThrown ) {
                 displayErrorFeedback(feedback, errorThrown);
             });
 
         });
 
+        // ---------------------------------------------------------------------
+        // Scheduled runtime
+        // ---------------------------------------------------------------------
+        var getSchedule = function(which){
+            var schedule = {};
+            schedule.enabled = $('#'+which+'-switch').prop('checked');
+            schedule.weekdays = [];
+            $('#'+which+'-weekdays > input.toggle-button' ).each(function(index){
+                if( $(this).prop('checked') ) schedule.weekdays.push(index);
+            });
+            schedule.time = {};
+            schedule.time.hours = $('#'+which+'-time-hours-select').val();
+            schedule.time.minutes = $('#'+which+'-time-minutes-select').val();
+            if(which == 'shutdown') {
+                schedule.type = $('#shutdown-type-select').val();
+            }
+            return schedule;
+        }
 
+        $('#startup-schedule-widget input').on('change', function() {
+            saveSchedule('startup');
+        });
+
+        $('#startup-schedule-widget select').on('change', function() {
+            saveSchedule('startup');
+        });
+
+        $('#shutdown-schedule-widget input').on('change', function() {
+            saveSchedule('shutdown');
+        });
+
+        $('#shutdown-schedule-widget select').on('change', function() {
+            saveSchedule('shutdown');
+        });
+
+
+        var saveSchedule = function(which){
+            $.ajax({
+                method: 'PUT',
+                url: '/tooloop/api/v1.0/system/'+which+'schedule',
+                data: JSON.stringify(getSchedule(which)),
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json'
+            }).done(function(data) {
+                $('#'+which+'-switch').prop('checked', data.schedule.enabled);
+                // enable/disable widgets
+                enableWidgets(which, data.schedule.enabled);
+            });
+
+        }
+
+        var enableWidgets = function (which, enable) {
+            $('#'+which+'-schedule-widget input.toggle-button' ).each(function(index){
+                $(this).prop('disabled', !enable);
+            });
+            $('#'+which+'-schedule-widget select' ).each(function(index){
+                $(this).prop('disabled', !enable);
+            });
+        }
+
+
+        // ---------------------------------------------------------------------
+        // Password
+        // ---------------------------------------------------------------------
         $('#password-form').on('submit', function(event) {
             event.preventDefault();
             var feedback = attachFeedback(event.target);
@@ -87,7 +279,7 @@
             }).done(function( data ) {
                 console.log(data);
                 displayConfirmFeedback(feedback, data.message);
-            }).error(function( jqXHR, textStatus, errorThrown ) {
+            }).fail(function( jqXHR, textStatus, errorThrown ) {
                 responseText = $.parseHTML(jqXHR.responseText);
 
                 for (var i=0; i<responseText.length; i++) {

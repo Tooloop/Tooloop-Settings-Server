@@ -1,5 +1,5 @@
 
-<script type="text/javascript" src="/static/js/jquery-2.2.1.min.js"></script>
+<script type="text/javascript" src="/static/js/jquery-3.3.1.min.js"></script>
 <script type='application/javascript' src='/static/js/fastclick.min.js'></script>
 
 <script type=text/javascript>
@@ -13,9 +13,9 @@
         $('#sidebar').toggleClass('mobile-menu');
     }
         
-    // ---------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // FEEDBACK
-    // ---------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     var feedbackTimeouts = {};
 
     var attachFeedback = function(form) {    
@@ -30,7 +30,7 @@
 
         // add html
         $(form).append('\
-            <div id="'+form.id+'-feedback" class="feedback" style="display:inline;"> \
+            <div id="'+form.id+'-feedback" class="feedback" style="display:block;"> \
                 <img class="feedback-icon" src="static/img/waiting_animation.gif" style="vertical-align: middle; height: 1.777777em; margin-right: -0.233333em;" /> \
                 <label class="feedback-text" style="display:none;"></label> \
             </div> \
@@ -59,4 +59,5 @@
             });
         }, 3000);
     }
+
 </script>
