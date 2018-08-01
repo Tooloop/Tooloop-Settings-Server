@@ -7,6 +7,7 @@ import fileinput
 import json
 from utils.time_utils import *
 from utils.cpu_load import CpuLoad
+from crontab import CronTab
 
 
 class System(object):
@@ -18,28 +19,26 @@ class System(object):
         self.needs_reboot = False
         # read runtime schedule from disk
         try:
-            with open(self.app.root_path+'/data/startup-schedule.json') as json_data:
-                self.startup_schedule = json.load(json_data)
+            with open(self.app.root_path+'/data/runtime-schedule.json') as json_data:
+                self.runtime_schedule = json.load(json_data)
         except Exception as e:
-            self.startup_schedule = {
-                'enabled' : False,
-                'weekdays' : [],
-                'time' : {
-                    'hours':8,
-                    'minutes':0
-                }
-            }
-        try:
-            with open(self.app.root_path+'/data/shutdown-schedule.json') as json_data:
-                self.shutdown_schedule = json.load(json_data)
-        except Exception as e:
-            self.shutdown_schedule = {
-                'enabled' : False,
-                'type': 'poweroff',
-                'weekdays' : [],
-                'time' : {
-                    'hours':20,
-                    'minutes':0
+            self.runtime_schedule = {
+                'startup': {
+                    'enabled': False, 
+                    'weekdays': [], 
+                    'time': {
+                        'hours': 8, 
+                        'minutes': 0
+                    }
+                },
+                'shutdown': {
+                    'enabled': False, 
+                    'type': 'poweroff', 
+                    'weekdays': [], 
+                    'time': {
+                        'hours': 20, 
+                        'minutes': 0
+                    }
                 }
             }
 
@@ -272,75 +271,80 @@ class System(object):
         return self.get_display_state()
 
 
-    def get_startup_schedule(self):
-        return self.startup_schedule
+    def get_runtime_schedule(self):
+        return self.runtime_schedule
 
-    def set_startup_schedule(self, schedule):
+    def set_runtime_schedule(self, schedule):
         # update data
-        if 'enabled' in schedule:
-            self.startup_schedule['enabled'] = schedule['enabled']
-        if 'weekdays' in schedule:
-            self.startup_schedule['weekdays'] = schedule['weekdays']
-        if 'time' in schedule:
-            if 'hours' in schedule['time']:
-                self.startup_schedule['time']['hours'] = int(schedule['time']['hours'])
-            if 'minutes' in schedule['time']:
-                self.startup_schedule['time']['minutes'] = int(schedule['time']['minutes'])
+        self.set_single_schedule('startup', schedule)
+        self.set_single_schedule('shutdown', schedule)
         # write changes to disk
         try:
-            with open(self.app.root_path+'/data/startup-schedule.json', 'w') as json_file:
-                json.dump(self.startup_schedule, json_file, indent=4)
+            with open(self.app.root_path+'/data/runtime-schedule.json', 'w') as json_file:
+                json.dump(self.runtime_schedule, json_file, indent=4)
         except Exception as e:
             raise e
+        # set up the rtc wakealarm and cron jobs
+        self.setup_runtime_schedule()
 
-    def get_shutdown_schedule(self):
-        return self.shutdown_schedule
-
-    def set_shutdown_schedule(self, schedule):
-        # update data
-        if 'enabled' in schedule:
-            self.shutdown_schedule['enabled'] = schedule['enabled']
-        if 'weekdays' in schedule:
-            self.shutdown_schedule['weekdays'] = schedule['weekdays']
-        if 'time' in schedule:
-            if 'hours' in schedule['time']:
-                self.shutdown_schedule['time']['hours'] = int(schedule['time']['hours'])
-            if 'minutes' in schedule['time']:
-                self.shutdown_schedule['time']['minutes'] = int(schedule['time']['minutes'])
-        if 'type' in schedule:
-            if schedule['type'] in ['blackout', 'poweroff']:
-                self.shutdown_schedule['type'] = schedule['type']
-        # write changes to disk
-        try:
-            with open(self.app.root_path+'/data/shutdown-schedule.json', 'w') as json_file:
-                json.dump(self.shutdown_schedule, json_file, indent=4)
-        except Exception as e:
-            raise e
+    def set_single_schedule(self, which, schedule):
+        if which in schedule:
+            if 'enabled' in schedule[which]:
+                self.runtime_schedule[which]['enabled'] = schedule[which]['enabled']
+            if 'type' in schedule[which]:
+                if schedule[which]['type'] in ['blackout', 'poweroff']:
+                    self.runtime_schedule[which]['type'] = schedule[which]['type']
+            if 'weekdays' in schedule[which]:
+                self.runtime_schedule[which]['weekdays'] = schedule[which]['weekdays']
+            if 'time' in schedule[which]:
+                if 'hours' in schedule[which]['time']:
+                    self.runtime_schedule[which]['time']['hours'] = int(schedule[which]['time']['hours'])
+                if 'minutes' in schedule[which]['time']:
+                    self.runtime_schedule[which]['time']['minutes'] = int(schedule[which]['time']['minutes'])
+        
 
     def setup_runtime_schedule(self):
-        # clear old wake_alarm
-        # call('echo 0 > /sys/class/rtc/rtc0/wakealarm', shell=True)
-        # clear start_app_and_display cron
-        # clear shutdown cron
-        # clear blackout cron
-
-        # startup_time = get_next_startup_time
-
-        # if start_up_enabled:
-        #     if blackout_enabled:
-        #         true:
-        #             set_start_app_and_display_cron
-        #         false:
-        #             set_wakealarm
+        crontab = CronTab(user='tooloop')
         
-        # if blackout_enabled:
-        #     set_blackout_cron
+        # empty wakealarm
+        call('echo 0 > /sys/class/rtc/rtc0/wakealarm', shell=True)
 
-        # if shutdown_enabled:
-        #     set_poweroff_cron
-        pass
+        # remove cron jobs
+        crontab.remove_all('display-on')
+        crontab.remove_all('poweroff')
+        crontab.remove_all('blackout')
+        crontab.write()
+
+        # start up
+        if self.runtime_schedule['startup']['enabled']:
+            if self.runtime_schedule['shutdown']['type'] == 'poweroff':
+                # set rtc wake alarm
+                call('echo '+str(self.get_next_startup_time())+' > /sys/class/rtc/rtc0/wakealarm', shell=True)
+            elif self.runtime_schedule['shutdown']['type'] == 'blackout':
+                # set startup cron job
+                job = crontab.new(command='env DISPLAY=:0.0 /opt/tooloop/scripts/tooloop-display-on && env DISPLAY=:0.0 /opt/tooloop/scripts/tooloop-presentation-reset')
+                job.hour.on(self.runtime_schedule['startup']['time']['hours'])
+                job.minute.on(self.runtime_schedule['startup']['time']['minutes'])
+                job.dow.on(*self.runtime_schedule['startup']['weekdays'])
+                crontab.write()
+
+        # shutdown
+        if self.runtime_schedule['shutdown']['enabled']:
+            if self.runtime_schedule['shutdown']['type'] == 'poweroff':
+                job = crontab.new(command='sudo poweroff')
+            elif self.runtime_schedule['shutdown']['type'] == 'blackout':
+                job = crontab.new(command='env DISPLAY=:0.0 /opt/tooloop/scripts/tooloop-blackout')
+            job.hour.on(self.runtime_schedule['shutdown']['time']['hours'])
+            job.minute.on(self.runtime_schedule['shutdown']['time']['minutes'])
+            job.dow.on(*self.runtime_schedule['shutdown']['weekdays'])
+            crontab.write()
 
 
 
     def get_next_startup_time(self):
-        pass
+        # TODO: calculate next startup time
+        # what day is today?
+        # what’s the next start day?
+        # create a date of next start day at start up time
+        # convert time to unix epoch time (in time utils)
+        return 1533136942

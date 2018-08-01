@@ -45,6 +45,8 @@
     {# ---------------------------------------------------------------------- #}
     {# Schedule #}
     {# ---------------------------------------------------------------------- #}
+    </table>
+    <table class="settings-table">
     <tr><td colspan="2"><h2>Schedule runtime</h2></td></tr>
     <tr>
         <td class="label-column hidden_mobile"></td>
@@ -52,7 +54,7 @@
             <div id="startup-schedule-widget">
                 <input 
                     type="checkbox"
-                    {% if startup_schedule.enabled %}checked{% endif %}
+                    {% if runtime_schedule.startup.enabled %}checked{% endif %}
                     id="startup-switch" 
                     name="startup-switch" 
                     class="switch">
@@ -67,8 +69,8 @@
                             {% for key, value in day.items() %}
                                 <input 
                                     type="checkbox" 
-                                    {% if outer_loop.index0 in startup_schedule.weekdays %}checked{% endif %}
-                                    {% if not startup_schedule.enabled %}disabled{% endif %}
+                                    {% if outer_loop.index in runtime_schedule.startup.weekdays %}checked{% endif %}
+                                    {% if not runtime_schedule.startup.enabled %}disabled{% endif %}
                                     id="startup-{{value|lower}}-toggle-button" 
                                     name="startup-{{value|lower}}-toggle-button" 
                                     class="toggle-button">
@@ -77,15 +79,15 @@
                         {% endfor %}
                     </div>
                     &nbsp;at&nbsp;
-                    <select id="startup-time-hours-select"{% if not startup_schedule.enabled %} disabled{% endif %}>
+                    <select id="startup-time-hours-select"{% if not runtime_schedule.startup.enabled %} disabled{% endif %}>
                         {% for hours in range(0,24) %}
-                            <option value="{{hours}}"{% if startup_schedule.time.hours == hours %} selected{% endif %}>{{ '%02d' % hours }}</option>
+                            <option value="{{hours}}"{% if runtime_schedule.startup.time.hours == hours %} selected{% endif %}>{{ '%02d' % hours }}</option>
                         {% endfor %}
                     </select>
                     :
-                    <select id="startup-time-minutes-select"{% if not startup_schedule.enabled %} disabled{% endif %}>
+                    <select id="startup-time-minutes-select"{% if not runtime_schedule.startup.enabled %} disabled{% endif %}>
                         {% for minutes in range(0,12) %}
-                            <option value="{{minutes*5}}"{% if (startup_schedule.time.minutes/5) == minutes %} selected{% endif %}>{{ '%02d' % (minutes*5) }}</option>
+                            <option value="{{minutes*5}}"{% if (runtime_schedule.startup.time.minutes/5) == minutes %} selected{% endif %}>{{ '%02d' % (minutes*5) }}</option>
                         {% endfor %}
                     </select>.
                 </div>
@@ -93,14 +95,14 @@
             <div id="shutdown-schedule-widget">
                 <input 
                     type="checkbox"
-                    {% if shutdown_schedule.enabled %}checked{% endif %}
+                    {% if runtime_schedule.shutdown.enabled %}checked{% endif %}
                     id="shutdown-switch" 
                     name="shutdown-switch" 
                     class="switch">
                 <label for="shutdown-switch">&nbsp;</label>
-                <select id="shutdown-type-select"{% if not shutdown_schedule.enabled %} disabled{% endif %}>
-                    <option value="poweroff"{% if shutdown_schedule.type == 'poweroff' %} selected{% endif %}>Power off</option>
-                    <option value="blackout"{% if shutdown_schedule.type == 'blackout' %} selected{% endif %}>Black out</option>
+                <select id="shutdown-type-select"{% if not runtime_schedule.shutdown.enabled %} disabled{% endif %}>
+                    <option value="poweroff"{% if runtime_schedule.shutdown.type == 'poweroff' %} selected{% endif %}>Power off</option>
+                    <option value="blackout"{% if runtime_schedule.shutdown.type == 'blackout' %} selected{% endif %}>Black out</option>
                 </select>
                 <div style="margin: 0.5rem 0 0 3.55rem;">
                     every&nbsp;
@@ -110,8 +112,8 @@
                             {% for key, value in day.items() %}
                                 <input 
                                     type="checkbox" 
-                                    {% if outer_loop.index0 in shutdown_schedule.weekdays %}checked{% endif %}
-                                    {% if not shutdown_schedule.enabled %}disabled{% endif %}
+                                    {% if outer_loop.index in runtime_schedule.shutdown.weekdays %}checked{% endif %}
+                                    {% if not runtime_schedule.shutdown.enabled %}disabled{% endif %}
                                     id="shutdown-{{value|lower}}-toggle-button" 
                                     name="shutdown-{{value|lower}}-toggle-button" 
                                     class="toggle-button">
@@ -120,15 +122,15 @@
                         {% endfor %}
                     </div>
                     &nbsp;at&nbsp;
-                    <select id="shutdown-time-hours-select"{% if not shutdown_schedule.enabled %} disabled{% endif %}>
+                    <select id="shutdown-time-hours-select"{% if not runtime_schedule.shutdown.enabled %} disabled{% endif %}>
                         {% for hours in range(0,24) %}
-                            <option value="{{hours}}"{% if shutdown_schedule.time.hours == hours %} selected{% endif %}>{{ '%02d' % hours }}</option>
+                            <option value="{{hours}}"{% if runtime_schedule.shutdown.time.hours == hours %} selected{% endif %}>{{ '%02d' % hours }}</option>
                         {% endfor %}
                     </select>
                     :
-                    <select id="shutdown-time-minutes-select"{% if not shutdown_schedule.enabled %} disabled{% endif %}>
+                    <select id="shutdown-time-minutes-select"{% if not runtime_schedule.shutdown.enabled %} disabled{% endif %}>
                         {% for minutes in range(0,12) %}
-                            <option value="{{minutes*5}}"{% if (shutdown_schedule.time.minutes/5) == minutes %} selected{% endif %}>{{ '%02d' % (minutes*5) }}</option>
+                            <option value="{{minutes*5}}"{% if (runtime_schedule.shutdown.time.minutes/5) == minutes %} selected{% endif %}>{{ '%02d' % (minutes*5) }}</option>
 
                         {% endfor %}
                     </select>.
@@ -163,17 +165,17 @@
         // ---------------------------------------------------------------------
         // Uptime
         // ---------------------------------------------------------------------
-        var uptime = new Date('{{uptime}}');
-        $('#uptime').html(
-            'Running since '
-            + (uptime.toDateString() == new Date().toDateString() ? '' : uptime.toLocaleDateString() + ', ')
+        var uptime = new Date("{{uptime}}");
+        $("#uptime").html(
+            "Running since "
+            + (uptime.toDateString() == new Date().toDateString() ? "" : uptime.toLocaleDateString() + ", ")
             + uptime.toLocaleTimeString()
         );
     
         // ---------------------------------------------------------------------
         // Hostname
         // ---------------------------------------------------------------------
-        $('#hostname-form').on('submit', function(event) {
+        $("#hostname-form").on("submit", function(event) {
             event.preventDefault();
 
             var feedback = attachFeedback(event.target);
@@ -191,14 +193,14 @@
         });
 
         // ---------------------------------------------------------------------
-        // Scheduled runtime
+        // Runtime schedule
         // ---------------------------------------------------------------------
         var getSchedule = function(which){
             var schedule = {};
             schedule.enabled = $('#'+which+'-switch').prop('checked');
             schedule.weekdays = [];
             $('#'+which+'-weekdays > input.toggle-button' ).each(function(index){
-                if( $(this).prop('checked') ) schedule.weekdays.push(index);
+                if( $(this).prop('checked') ) schedule.weekdays.push(index+1);
             });
             schedule.time = {};
             schedule.time.hours = $('#'+which+'-time-hours-select').val();
@@ -210,43 +212,50 @@
         }
 
         $('#startup-schedule-widget input').on('change', function() {
-            saveSchedule('startup');
+            saveSchedule();
         });
 
         $('#startup-schedule-widget select').on('change', function() {
-            saveSchedule('startup');
+            saveSchedule();
         });
 
         $('#shutdown-schedule-widget input').on('change', function() {
-            saveSchedule('shutdown');
+            saveSchedule();
         });
 
         $('#shutdown-schedule-widget select').on('change', function() {
-            saveSchedule('shutdown');
+            saveSchedule();
         });
 
 
-        var saveSchedule = function(which){
+        var saveSchedule = function(){
+            var schedule = {
+                "startup": getSchedule("startup"),
+                "shutdown": getSchedule("shutdown")
+            }
+
             $.ajax({
-                method: 'PUT',
-                url: '/tooloop/api/v1.0/system/'+which+'schedule',
-                data: JSON.stringify(getSchedule(which)),
-                contentType: 'application/json; charset=utf-8',
-                dataType: 'json'
+                method: "PUT",
+                url: "/tooloop/api/v1.0/system/runtimeschedule",
+                data: JSON.stringify(schedule),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json"
             }).done(function(data) {
-                $('#'+which+'-switch').prop('checked', data.schedule.enabled);
+                $("#startup-switch").prop("checked", data.schedule.startup.enabled);
+                $("#shutdown-switch").prop("checked", data.schedule.shutdown.enabled);
                 // enable/disable widgets
-                enableWidgets(which, data.schedule.enabled);
+                enableWidgets("startup", data.schedule.startup.enabled);
+                enableWidgets("shutdown", data.schedule.shutdown.enabled);
             });
 
         }
 
         var enableWidgets = function (which, enable) {
-            $('#'+which+'-schedule-widget input.toggle-button' ).each(function(index){
-                $(this).prop('disabled', !enable);
+            $("#"+which+"-schedule-widget input.toggle-button" ).each(function(index){
+                $(this).prop("disabled", !enable);
             });
-            $('#'+which+'-schedule-widget select' ).each(function(index){
-                $(this).prop('disabled', !enable);
+            $("#"+which+"-schedule-widget select" ).each(function(index){
+                $(this).prop("disabled", !enable);
             });
         }
 
@@ -254,7 +263,7 @@
         // ---------------------------------------------------------------------
         // Password
         // ---------------------------------------------------------------------
-        $('#password-form').on('submit', function(event) {
+        $("#password-form").on("submit", function(event) {
             event.preventDefault();
             var feedback = attachFeedback(event.target);
 
@@ -283,7 +292,7 @@
                 responseText = $.parseHTML(jqXHR.responseText);
 
                 for (var i=0; i<responseText.length; i++) {
-                    if (responseText[i].tagName == 'P') {
+                    if (responseText[i].tagName == "P") {
                         displayErrorFeedback(feedback, responseText[i].textContent);
                         break;
                     }

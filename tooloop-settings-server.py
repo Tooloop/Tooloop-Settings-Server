@@ -5,7 +5,7 @@
     ~~~~~~~~~~~~~~~~~~~~~~~
     System adminisation tool for a Tooloop OS box.
     :copyright: (c) 2017 by Daniel Stock.
-    :license: Beerware, see LICENSE for more details.
+    :license: Unlicense, see LICENSE for more details.
 """
 
 from flask import Flask, jsonify, render_template, request, after_this_request, abort, send_from_directory
@@ -107,8 +107,7 @@ def render_system():
         uptime = time_to_ISO_string(system.get_uptime()),
         ssh_running = services.is_ssh_running(),
         vnc_running = services.is_vnc_running(),
-        startup_schedule = system.get_startup_schedule(),
-        shutdown_schedule = system.get_shutdown_schedule(),
+        runtime_schedule = system.get_runtime_schedule(),
     )
 
 
@@ -268,41 +267,22 @@ def set_display_state():
     except Exception as e:
         abort(500, e)
 
-@app.route('/tooloop/api/v1.0/system/startupschedule', methods=['GET'])
-def get_startup_schedule():
+@app.route('/tooloop/api/v1.0/system/runtimeschedule', methods=['GET'])
+def get_runtime_schedule():
     try:
-        return jsonify(system.get_startup_schedule())
+        return jsonify(system.get_runtime_schedule())
     except Exception as e:
         abort(500, e)
 
-@app.route('/tooloop/api/v1.0/system/startupschedule', methods=['PUT'])
-def set_startup_schedule():
+@app.route('/tooloop/api/v1.0/system/runtimeschedule', methods=['PUT'])
+def set_runtime_schedule():
     if not request.get_json():
         abort(400)
     try:
-        system.set_startup_schedule(request.get_json())
-        return jsonify({ 'schedule' : system.get_startup_schedule() })
+        system.set_runtime_schedule(request.get_json())
+        return jsonify({ 'schedule' : system.get_runtime_schedule() })
     except Exception as e:
       abort(500, e)
-
-@app.route('/tooloop/api/v1.0/system/shutdownschedule', methods=['GET'])
-def get_shutdown_schedule():
-    try:
-        return jsonify(system.get_shutdown_schedule())
-    except Exception as e:
-        abort(500, e)
-
-@app.route('/tooloop/api/v1.0/system/shutdownschedule', methods=['PUT'])
-def set_shutdown_schedule():
-    if not request.get_json():
-        abort(400)
-    try:
-        system.set_shutdown_schedule(request.get_json())
-        return jsonify({ 'schedule' : system.get_shutdown_schedule() })
-    except Exception as e:
-      abort(500, e)
-
-
 
 
 

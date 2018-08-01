@@ -1,0 +1,19 @@
+{
+    "startup": {
+        "enabled": false, 
+        "weekdays": [], 
+        "time": {
+            "hours": 8, 
+            "minutes": 0
+        }
+    },
+    "shutdown": {
+        "enabled": false, 
+        "type": "poweroff", 
+        "weekdays": [], 
+        "time": {
+            "hours": 20, 
+            "minutes": 0
+        }
+    }
+}
