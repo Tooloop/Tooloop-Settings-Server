@@ -1,0 +1,9 @@
+{
+    "enabled": false, 
+    "type": "poweroff", 
+    "weekdays": [], 
+    "time": {
+        "hours": 20, 
+        "minutes": 0
+    }
+}

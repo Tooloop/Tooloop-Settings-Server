@@ -46,14 +46,14 @@ class Services(object):
 
     def enable_remote_configuration(self):
         # change server config
-        file = open(self.app.root_path+"/config.cfg", "w")
+        file = open(self.app.root_path+"/data/config.cfg", "w")
         file.write('HOST = "0.0.0.0"')
         file.close()
         call(['systemctl','restart','tooloop-settings-server'])
 
     def disable_remote_configuration(self):
         # change server config
-        file = open(self.app.root_path+"/config.cfg", "w")
+        file = open(self.app.root_path+"/data/config.cfg", "w")
         file.write('HOST = "127.0.0.1"')
         file.close()
         call(['systemctl','restart','tooloop-settings-server'])

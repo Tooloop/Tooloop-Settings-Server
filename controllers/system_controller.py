@@ -4,28 +4,37 @@ import os
 import time
 import pexpect
 import fileinput
+import json
 from utils.time_utils import *
 from utils.cpu_load import CpuLoad
 
 
 class System(object):
     """Holds information of the tooloop box."""
-    def __init__(self, augtool):
+    def __init__(self, app):
         super(System, self).__init__()
-        self.augtool = augtool
+        self.app = app
         self.cpu_load = CpuLoad()
         self.needs_reboot = False
-        self.startup_schedule = {
-            'enabled' : False,
-            'weekdays' : [],
-            'time' : {'hours':8, 'minutes':0}
-        }
-        self.shutdown_schedule = {
-            'enabled' : False,
-            'type': 'poweroff',
-            'weekdays' : [],
-            'time' : {'hours':20, 'minutes':0}
-        }
+        try:
+            with open(self.app.root_path+'/data/startup-schedule.json') as json_data:
+                self.startup_schedule = json.load(json_data)
+        except Exception as e:
+            self.startup_schedule = {
+                'enabled' : False,
+                'weekdays' : [],
+                'time' : {'hours':8, 'minutes':0}
+            }
+        try:
+            with open(self.app.root_path+'/data/shutdown-schedule.json') as json_data:
+                self.shutdown_schedule = json.load(json_data)
+        except Exception as e:
+            self.shutdown_schedule = {
+                'enabled' : False,
+                'type': 'poweroff',
+                'weekdays' : [],
+                'time' : {'hours':20, 'minutes':0}
+            }
 
     def get_hostname(self):
         try:
@@ -265,6 +274,12 @@ class System(object):
                 self.startup_schedule['time']['hours'] = int(schedule['time']['hours'])
             if 'minutes' in schedule['time']:
                 self.startup_schedule['time']['minutes'] = int(schedule['time']['minutes'])
+        # write changes to disk
+        try:
+            with open(self.app.root_path+'/data/startup-schedule.json', 'w') as json_file:
+                json.dump(self.startup_schedule, json_file, indent=4)
+        except Exception as e:
+            raise e
 
     def get_shutdown_schedule(self):
         return self.shutdown_schedule
@@ -282,3 +297,9 @@ class System(object):
         if 'type' in schedule:
             if schedule['type'] in ['blackout', 'poweroff']:
                 self.shutdown_schedule['type'] = schedule['type']
+        # write changes to disk
+        try:
+            with open(self.app.root_path+'/data/shutdown-schedule.json', 'w') as json_file:
+                json.dump(self.shutdown_schedule, json_file, indent=4)
+        except Exception as e:
+            raise e

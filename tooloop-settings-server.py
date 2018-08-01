@@ -18,7 +18,7 @@ from controllers.services_controller import Services
 from controllers.screenshot_controller import Screenshots
 from utils.time_utils import *
 
-import augeas
+# import augeas
 import time
 
 from pprint import pprint
@@ -29,11 +29,11 @@ from subprocess import call
 # ------------------------------------------------------------------------------
 
 app = Flask(__name__)
-app.config.from_pyfile('config.cfg')
+app.config.from_pyfile('data/config.cfg')
 
 
-augtool = augeas.Augeas()
-system = System(augtool)
+# augtool = augeas.Augeas()
+system = System(app)
 presentation = Presentation()
 appcenter = AppCenter(presentation, app)
 services = Services(app)
