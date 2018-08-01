@@ -16,6 +16,7 @@ class System(object):
         self.app = app
         self.cpu_load = CpuLoad()
         self.needs_reboot = False
+        # read runtime schedule from disk
         try:
             with open(self.app.root_path+'/data/startup-schedule.json') as json_data:
                 self.startup_schedule = json.load(json_data)
@@ -23,7 +24,10 @@ class System(object):
             self.startup_schedule = {
                 'enabled' : False,
                 'weekdays' : [],
-                'time' : {'hours':8, 'minutes':0}
+                'time' : {
+                    'hours':8,
+                    'minutes':0
+                }
             }
         try:
             with open(self.app.root_path+'/data/shutdown-schedule.json') as json_data:
@@ -33,8 +37,15 @@ class System(object):
                 'enabled' : False,
                 'type': 'poweroff',
                 'weekdays' : [],
-                'time' : {'hours':20, 'minutes':0}
+                'time' : {
+                    'hours':20,
+                    'minutes':0
+                }
             }
+
+        self.setup_runtime_schedule()
+
+
 
     def get_hostname(self):
         try:
@@ -265,6 +276,7 @@ class System(object):
         return self.startup_schedule
 
     def set_startup_schedule(self, schedule):
+        # update data
         if 'enabled' in schedule:
             self.startup_schedule['enabled'] = schedule['enabled']
         if 'weekdays' in schedule:
@@ -285,6 +297,7 @@ class System(object):
         return self.shutdown_schedule
 
     def set_shutdown_schedule(self, schedule):
+        # update data
         if 'enabled' in schedule:
             self.shutdown_schedule['enabled'] = schedule['enabled']
         if 'weekdays' in schedule:
@@ -303,3 +316,31 @@ class System(object):
                 json.dump(self.shutdown_schedule, json_file, indent=4)
         except Exception as e:
             raise e
+
+    def setup_runtime_schedule(self):
+        # clear old wake_alarm
+        # call('echo 0 > /sys/class/rtc/rtc0/wakealarm', shell=True)
+        # clear start_app_and_display cron
+        # clear shutdown cron
+        # clear blackout cron
+
+        # startup_time = get_next_startup_time
+
+        # if start_up_enabled:
+        #     if blackout_enabled:
+        #         true:
+        #             set_start_app_and_display_cron
+        #         false:
+        #             set_wakealarm
+        
+        # if blackout_enabled:
+        #     set_blackout_cron
+
+        # if shutdown_enabled:
+        #     set_poweroff_cron
+        pass
+
+
+
+    def get_next_startup_time(self):
+        pass

@@ -17,12 +17,10 @@ class Services(object):
         return output != ""
 
     def enable_vnc(self):
-        call('su tooloop -c "systemctl --user enable x11vnc.service"', shell=True)
-        call('su tooloop -c "systemctl --user start x11vnc.service"', shell=True)
+        call('su tooloop -c "/opt/tooloop/scripts/tooloop-vnc-enable"', shell=True)
 
     def disable_vnc(self):
-        call('su tooloop -c "systemctl --user disable x11vnc.service"', shell=True)
-        call('su tooloop -c "systemctl --user stop x11vnc.service"', shell=True)
+        call('su tooloop -c "/opt/tooloop/scripts/tooloop-vnc-disable"', shell=True)
 
 
     def is_ssh_running(self):
@@ -33,12 +31,10 @@ class Services(object):
         return output != ""
 
     def enable_ssh(self):
-        call(['systemctl','enable','ssh'])
-        call(['systemctl','start','ssh'])
+        call('/opt/tooloop/scripts/tooloop-ssh-enable', shell=True)
 
     def disable_ssh(self):
-        call(['systemctl','disable','ssh'])
-        call(['systemctl','stop','ssh'])
+        call('/opt/tooloop/scripts/tooloop-ssh-disable', shell=True)
 
 
     def is_remote_configuration_running(self):
