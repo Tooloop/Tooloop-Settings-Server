@@ -5,6 +5,7 @@ import time
 import pexpect
 import fileinput
 import json
+import datetime
 from utils.time_utils import *
 from utils.cpu_load import CpuLoad
 from crontab import CronTab
@@ -342,9 +343,27 @@ class System(object):
 
 
     def get_next_startup_time(self):
-        # TODO: calculate next startup time
-        # what day is today?
-        # what’s the next start day?
-        # create a date of next start day at start up time
-        # convert time to unix epoch time (in time utils)
-        return 1533136942
+        # What weeday is today?
+        weekday = get_iso_weekday()
+
+        # What’s the next weekday to start up?
+        next_weekday = min(self.runtime_schedule['startup']['weekdays'])
+        for day in sorted(self.runtime_schedule['startup']['weekdays']):
+            if day > weekday:
+                next_weekday = day
+                break
+
+        # Create a date of today at start up time
+        next_startup = datetime.datetime.today().replace(
+            hour=self.runtime_schedule['startup']['time']['hours'],
+            minute=self.runtime_schedule['startup']['time']['minutes'],
+            second=0, 
+            microsecond=0
+        )
+
+        # Add the number of days between today and the next startup weekday
+        delta_days = ((next_weekday + 7) - weekday) % 7
+        next_startup += datetime.timedelta(days=delta_days)
+
+        # Convert time to unix epoch time (in time utils)
+        return datetime_to_unix_time_millis(next_startup)
