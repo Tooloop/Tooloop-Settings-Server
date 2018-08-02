@@ -361,9 +361,16 @@ class System(object):
             microsecond=0
         )
 
-        # Add the number of days between today and the next startup weekday
-        delta_days = ((next_weekday + 7) - weekday) % 7
-        next_startup += datetime.timedelta(days=delta_days)
+        # If it is after the daily startup time,
+        # add the days between today and the next startup day
+        now = datetime.datetime.now().time()
+        startup_time = datetime.time(
+            hour=self.runtime_schedule['startup']['time']['hours'],
+            minute=self.runtime_schedule['startup']['time']['minutes']
+        )
+        if now > startup_time:
+            delta_days = ((next_weekday + 7) - weekday) % 7
+            next_startup += datetime.timedelta(days=delta_days)
 
         # Convert time to unix epoch time (in time utils)
         return datetime_to_unix_time_millis(next_startup)
