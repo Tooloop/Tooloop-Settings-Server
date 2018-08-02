@@ -317,7 +317,7 @@ class System(object):
         crontab.write()
 
         # start up
-        if self.runtime_schedule['startup']['enabled']:
+        if self.runtime_schedule['startup']['enabled'] and len(self.runtime_schedule['startup']['weekdays']) > 0:
             if self.runtime_schedule['shutdown']['type'] == 'poweroff':
                 # set rtc wake alarm
                 call('echo '+str(self.get_next_startup_time())+' > /sys/class/rtc/rtc0/wakealarm', shell=True)
@@ -330,7 +330,7 @@ class System(object):
                 crontab.write()
 
         # shutdown
-        if self.runtime_schedule['shutdown']['enabled']:
+        if self.runtime_schedule['shutdown']['enabled'] and len(self.runtime_schedule['shutdown']['weekdays']) > 0:
             if self.runtime_schedule['shutdown']['type'] == 'poweroff':
                 job = crontab.new(command='sudo poweroff')
             elif self.runtime_schedule['shutdown']['type'] == 'blackout':
