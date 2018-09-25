@@ -5,7 +5,7 @@
     ~~~~~~~~~~~~~~~~~~~~~~~
     System adminisation tool for a Tooloop OS box.
     :copyright: (c) 2017 by Daniel Stock.
-    :license: Beerware, see LICENSE for more details.
+    :license: Unlicense, see LICENSE for more details.
 """
 
 from flask import Flask, jsonify, render_template, request, after_this_request, abort, send_from_directory
@@ -18,7 +18,7 @@ from controllers.services_controller import Services
 from controllers.screenshot_controller import Screenshots
 from utils.time_utils import *
 
-import augeas
+# import augeas
 import time
 
 from pprint import pprint
@@ -29,11 +29,11 @@ from subprocess import call
 # ------------------------------------------------------------------------------
 
 app = Flask(__name__)
-app.config.from_pyfile('config.cfg')
+app.config.from_pyfile('data/config.cfg')
 
 
-augtool = augeas.Augeas()
-system = System(augtool)
+# augtool = augeas.Augeas()
+system = System(app)
 presentation = Presentation()
 appcenter = AppCenter(presentation, app)
 services = Services(app)
@@ -56,34 +56,30 @@ app.jinja_loader = template_loader
 def render_dashboard():
     return render_template('dashboard.html', 
         page = 'dashboard', 
-        installed_app = appcenter.get_installed_app(), 
-        app_controller = appcenter.get_installed_app_controller(),
+        installed_presentation = appcenter.get_installed_presentation(),
+        installed_presentation_controller = appcenter.get_installed_presentation_controller(),
         hostname = system.get_hostname(),
         display_state = system.get_display_state(),
+        audio_mute = system.get_audio_mute(),
         audio_volume = system.get_audio_volume(),
         uptime = time_to_ISO_string(system.get_uptime()),
         screenshot_service_running = services.is_screenshot_service_running()
     )
 
-@app.route("/network")
-def render_network():
-    return render_template('network.html', 
-        page='network', 
-        installed_app = appcenter.get_installed_app(),
-        interfaces = [{
-            'ip': 'x.x.x.x',
-            'subnet_mask': '255.255.255.0',
-            'gateway': 'x.x.x.x'
-        }]
-    )
+# @app.route("/network")
+# def render_network():
+#     return render_template('network.html', 
+#         page='network', 
+#         installed_presentation = appcenter.get_installed_presentation()
+#     )
 
 @app.route("/appcenter")
 def render_appcenter():
-    appcenter.check_available_apps()
+    appcenter.update_packages()
     return render_template('appcenter.html', 
         page='appcenter', 
-        installed_app = appcenter.get_installed_app(),
-        available_apps = appcenter.get_availeble_apps(),
+        installed_presentation = appcenter.get_installed_presentation(),
+        availeble_packages = appcenter.get_availeble_packages(),
         time_stamp = time.time(),
     )
 
@@ -91,17 +87,22 @@ def render_appcenter():
 def render_services():
     return render_template('services.html', 
         page='services', 
-        installed_app = appcenter.get_installed_app(),
+        installed_presentation = appcenter.get_installed_presentation(),
         services = services.get_status(),
     )
 
 @app.route("/system")
 def render_system():
     return render_template('system.html', 
-        page='system', 
-        installed_app = appcenter.get_installed_app(),
+        page='system',
+        installed_presentation = appcenter.get_installed_presentation(),
+        os_version = "0.9 alpha",
         hostname = system.get_hostname(),
         ip_address = system.get_ip(),
+        uptime = time_to_ISO_string(system.get_uptime()),
+        ssh_running = services.is_ssh_running(),
+        vnc_running = services.is_vnc_running(),
+        runtime_schedule = system.get_runtime_schedule(),
     )
 
 
@@ -225,6 +226,10 @@ def set_audio_volume():
     except Exception as e:
         raise e
 
+@app.route('/tooloop/api/v1.0/system/audiomute', methods=['GET'])
+def get_audio_mute():
+    return json.jsonify(system.get_audio_mute())
+
 @app.route('/tooloop/api/v1.0/system/audiomute', methods=['PUT'])
 def set_audio_mute():
     if not request.form or not 'mute' in request.form:
@@ -256,6 +261,24 @@ def set_display_state():
         return jsonify({ 'Display' : state })
     except Exception as e:
         abort(500, e)
+
+@app.route('/tooloop/api/v1.0/system/runtimeschedule', methods=['GET'])
+def get_runtime_schedule():
+    try:
+        return jsonify(system.get_runtime_schedule())
+    except Exception as e:
+        abort(500, e)
+
+@app.route('/tooloop/api/v1.0/system/runtimeschedule', methods=['PUT'])
+def set_runtime_schedule():
+    if not request.get_json():
+        abort(400)
+    try:
+        system.set_runtime_schedule(request.get_json())
+        return jsonify({ 'schedule' : system.get_runtime_schedule() })
+    except Exception as e:
+      abort(500, e)
+
 
 
 # presentation
@@ -300,23 +323,25 @@ def get_availeble_apps():
     return jsonify(available_as_dict)
 
 @app.route('/tooloop/api/v1.0/appcenter/refresh', methods=['GET'])
-def check_available_apps():
-    appcenter.check_available_apps()
+def update_packages():
+    appcenter.update_packages()
     return get_availeble_apps()
 
 @app.route('/tooloop/api/v1.0/appcenter/install/<string:name>', methods=['GET'])
 def install_app(name):
-    @after_this_request
-    def add_header(response):
-        response.headers['X-Foo'] = 'Parachute'
-        return response
-
     appcenter.install(name)
-
-    # call(['systemctl','restart','tooloop-settings-server'])
 
     try:
         return jsonify(appcenter.get_installed_app().to_dict())
+    except Exception as e:
+        abort(500, e)
+
+@app.route('/tooloop/api/v1.0/appcenter/uninstall/<string:name>', methods=['GET'])
+def uninstall_app(name):
+    appcenter.uninstall(name)
+
+    try:
+        return jsonify({ 'message' : name+' uninstalled successfully' })
     except Exception as e:
         abort(500, e)
 

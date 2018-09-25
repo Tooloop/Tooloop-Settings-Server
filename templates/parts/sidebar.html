@@ -12,10 +12,10 @@
         <!-- <li><a href="/network" class="network">Network</a></li> -->
         <li><a href="/system" class="system">System</a></li>
     </ul>
-    {% if installed_app.has_settings %}
+    {% if installed_presentation.has_settings %}
     <hr/>
     <ul>
-        <li><a href="/appsettings" class="appsettings">{{installed_app.name}}</a></li>
+        <li><a href="/appsettings" class="appsettings">{{installed_presentation.name}}</a></li>
     </ul>
     {% endif %}
     <img src="/static/img/tooloop_logo.png" id="logo" />
