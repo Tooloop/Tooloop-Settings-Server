@@ -31,7 +31,11 @@
                 </td>
             </tr>
             <tr>
-                <td class="label-column">{{ installed_presentation.name }}</td>
+                <td class="label-column top">Uptime</td>
+                <td class="value-column"><span id="uptime"></span ></td>
+            </tr>
+            <tr>
+                <td class="label-column">{{ installed_app.name }}</td>
                 <td class="value-column">
                     <span style="white-space: nowrap;">
                         <button onclick="startPresentation()">Start</button>
@@ -52,22 +56,30 @@
                 <td class="label-column">Volume</td>
                 <td class="value-column" style="font-size: 0.75rem;">
                     <div style="float: left; margin: 0.25rem 1em 0 0;">
-                        <input 
-                            id="volume-slider" 
-                            {% if audio_mute %}disabled{% endif %}
-                            name="volume-slider" 
-                            type="range" 
-                            min="0" max="150" 
-                            value="{{audio_volume}}" 
-                            style="margin-left: 0em;">
+                        <input id="volume-slider" name="volume-slider" type="range" min="0" max="150" value="{{audio_volume}}" style="margin-left: 0em;">
                         <label for="volume-slider" id="volume-label" style="width: 3rem; display: inline-block;">{{audio_volume}} %</label>
                     </div>
                     <div style="float: left;">
-                        <input id="volume-switch" name="volume-switch" class="switch" type="checkbox"{% if not audio_mute %} checked{% endif %}>
+                        <input id="volume-switch" name="volume-switch" class="switch" checked="" type="checkbox">
                         <label for="volume-switch">&nbsp;</label>
                     </div>
                 </td>
             </tr>
+            {# {% if ssh_running or vnc_running %}
+            <tr>
+                <td class="label-column">Remote access</td>
+                <td class="value-column">
+                    <span style="white-space: nowrap;">
+                        {% if ssh_running %}<button onclick="document.location='ssh://tooloop@{{ip_address}}'">SSH</button>{% endif %}
+                        {% if vnc_running %}<button onclick="document.location='vnc://{{ip_address}}'">Screen sharing</button>{% endif %}
+                    </span>
+                </td>
+            </tr>
+            {% endif %} #}
+            {# <tr>
+                <td class="label-column">Security updates</td>
+                <td>4 <button onclick="" style="margin-left:1em;" class="discreet">Install updates</button></td>
+            </tr> #}
         </table>
     </div> <!-- end system-area -->
 
@@ -128,6 +140,17 @@
 <script type="text/javascript">
 
 $(document).ready(function() {
+
+    // -------------------------------------------------------------------------
+    // Uptime
+    // -------------------------------------------------------------------------
+    var uptime = new Date('{{uptime}}');
+    $('#uptime').html(
+        'Running since '
+        + (uptime.toDateString() == new Date().toDateString() ? '' : uptime.toLocaleDateString() + ', ')
+        + uptime.toLocaleTimeString()
+        );
+
 
     {% if screenshot_service_running %}
     // -------------------------------------------------------------------------
@@ -517,7 +540,7 @@ var getSystemUsage = function(doneFunction) {
                 hideCover();
             }
         }
-    }).fail(function(data){
+    }).error(function(data){
         doneFunction(null);
     });
 }
