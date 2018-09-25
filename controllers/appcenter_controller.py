@@ -15,7 +15,9 @@ import sys
 # from apt.progress import base
 
 from utils.file_utils import *
+from utils.exceptions import *
 from shutil import copy, copytree, rmtree
+from pprint import pprint
 
 
 # TODO: inherit from apt.package
@@ -109,7 +111,12 @@ class AppCenter(object):
         self.root_path = flask.root_path
         self.package_path = '/assets/packages/'
         self.packages = None
-        # self.update_packages()
+        # TODO: if not data/packages.json
+        if True:
+            self.update_packages()
+        else:
+            # read from json
+            pass
 
         # get information of installed packages
         self.installed_presentation = None
@@ -146,44 +153,36 @@ class AppCenter(object):
     def get_availeble_packages(self):
         return self.packages
 
-
-    # TODO: this can be slow, maybe we shouldn’t do this at app start/boot store result
     def update_packages(self):
         self.packages = {
             'presentations': [],
             'addons': []
         }
-
         # update local repository
         ps = Popen('/opt/tooloop/scripts/tooloop-update-packages', shell=True, stdout=PIPE)
-        
+    
         # search for tooloop packages
         ps = Popen('aptitude -F"%p" search "?section(tooloop)"', shell=True, stdout=PIPE)
         output = ps.stdout.read()
         ps.stdout.close()
         ps.wait()
-        print(output)
+        packages = output.splitlines()
+        for index in range(len(packages)):
+            packages[index] = packages[index].replace(" ", "")
 
-        # for package in directory:
-        #     if isfile(self.package_path+package+XXXXXXXXX'.deb'):
-        #         package = self.read_package_information(self.package_path+package+'/xxxxxxxx')
-        #         if package:
-        #             if '/tooloop/addon' in package.section:
-        #                 self.packages['addons'].append(package)
-        #             else if '/tooloop/presentation' in package.section:
-        #                 self.packages['presentations'].append(package)
-        #             else:
-        #                 # TODO: log error, no type
-        #                 pass
-        # self.packages.sort(key=lambda x : x.name)
+        cache = apt.Cache()
+        for package in packages:
+            pkg = cache[package]
+            if "tooloop/presentation" in pkg.section:
+                self.packages['presentations'].append(pkg)
+            elif "tooloop/addon" in pkg.section:
+                self.packages['addons'].append(pkg)
 
 
-    def read_package_information(self, deb_file):
 
-        if not isfile(deb_file):
-            return None
-
-        package = Package()
+    def read_package_information(self, package):
+        cache = apt.Cache()
+        pkg = Package()
 
         # TODO: read info from control file
 
@@ -191,7 +190,7 @@ class AppCenter(object):
         # package.has_controller = isfile(bundle_path+'/controller.py')
         # package.has_settings = isfile(bundle_path+'/settings.html')
 
-        return package
+        return pkg
 
 
 
@@ -201,38 +200,47 @@ class AppCenter(object):
         # fprogress = apt.progress.TextFetchProgress()
         # iprogress = TextInstallProgress()
 
-        pkg = cache["3dchess"]
+        pkg = cache[package]
 
+        # Only handle tooloop packages
+        if not "tooloop" in pkg.section:
+            # 403   Forbidden
+            raise InvalidUsage(package+"is not a tooloop package", status_code=403);
+
+        # Package is apresentation and there is a presentation already
+        if "tooloop/presentation" in pkg.section and self.installed_presentation:
+            # 409   Conflict
+            raise InvalidUsage("Only one presentation can be installed at a time", status_code=409);
+
+        # Package is installed already
         if pkg.is_installed:
-            print "%s is already installed" % pkg.name
-        else:
-            pkg.mark_install()
+            # 304     Not Modified
+            raise InvalidUsage(package + "is already installed", status_code=400);
+
+        pkg.mark_install()
 
         try:
-            print "Installing %s" % pkg.name
+            # stop running presentation
+            if "tooloop/presentation" in pkg.section:
+                self.presentation_controller.stop()
+            # install
             result = cache.commit()
-            print result
+            # make Python aware of controller module
+            # if isfile(self.root_path+'/installed_app/controller.py'):
+            #     self.touch(self.root_path+'/installed_app/__init__.py')
+            print result # True if all was fine
+            # restart presentation
+            # self.presentation_controller.start()
+            # get information and update self.installed_presentation
+            # self.installed_presentation = self.read_package_information(package)
         except Exception, arg:
-            print >> sys.stderr, "Sorry, package installation failed [{err}]".format(err=str(arg))
+            raise Exception("Sorry, package installation failed [{err}]".format(err=str(arg)))
 
 
-        # TODO: if package is apresentation and there is a presentation already
-        # --> return with error
 
-        # stop running presentation
-        # self.presentation_controller.stop()
 
-        # TODO: apt install package
 
-        # make Python aware of controller module
-        # if isfile(self.root_path+'/installed_app/controller.py'):
-        #     self.touch(self.root_path+'/installed_app/__init__.py')
 
-        # restart presentation
-        # self.presentation_controller.start()
-
-        # get information and update self.installed_presentation
-        # self.installed_presentation = self.read_package_information(self.root_path+'/installed_app')
 
 
     def uninstall(self, package):
@@ -247,17 +255,25 @@ class AppCenter(object):
         # fprogress = apt.progress.TextFetchProgress()
         # iprogress = TextInstallProgress()
 
-        if pkg.is_installed:
-            pkg.mark_delete()
-        else:
-            print "%s is not installed" % pkg.name
+        pkg = cache[package]
 
-        try:
-            print "Unnstalling %s" % pkg.name
-            result = cache.commit()
-            print result
-        except Exception, arg:
-            print >> sys.stderr, "Sorry, purging package failed [{err}]".format(err=str(arg))
+        # Only handle tooloop packages
+        if not "tooloop" in pkg.section:
+            raise Exception(package+"is not a tooloop package");
+            
+
+        # if pkg.is_installed:
+        #     pkg.mark_delete()
+        # else:
+        #     print "%s is not installed" % pkg.name
+        #     return
+
+        # try:
+        #     print "Unnstalling %s" % pkg.name
+        #     result = cache.commit()
+        #     print result
+        # except Exception, arg:
+        #     print >> sys.stderr, "Sorry, purging package failed [{err}]".format(err=str(arg))
 
 
 
@@ -289,6 +305,3 @@ class AppCenter(object):
     def touch(self, filename, times=None):
         with open(filename, 'a'):
             os.utime(filename, times)
-
-    def uninstall(self):
-        pass

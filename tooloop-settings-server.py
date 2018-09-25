@@ -8,7 +8,7 @@
     :license: Unlicense, see LICENSE for more details.
 """
 
-from flask import Flask, jsonify, render_template, request, after_this_request, abort, send_from_directory
+from flask import Flask, jsonify, render_template, request, after_this_request, abort, send_from_directory, make_response
 from jinja2 import ChoiceLoader, FileSystemLoader
 
 from controllers.system_controller import System
@@ -17,6 +17,7 @@ from controllers.appcenter_controller import AppCenter
 from controllers.services_controller import Services
 from controllers.screenshot_controller import Screenshots
 from utils.time_utils import *
+from utils.exceptions import *
 
 # import augeas
 import time
@@ -327,23 +328,35 @@ def update_packages():
     appcenter.update_packages()
     return get_availeble_apps()
 
-@app.route('/tooloop/api/v1.0/appcenter/install/<string:name>', methods=['GET'])
-def install_app(name):
-    appcenter.install(name)
 
+
+@app.route('/tooloop/api/v1.0/appcenter/install/<string:name>', methods=['GET'])
+def install_package(name):
     try:
-        return jsonify(appcenter.get_installed_app().to_dict())
+        appcenter.install(name)
+        return jsonify({ 'message' : name+' installed successfully' })
+    except InvalidUsage as e:
+        return make_response(e.message, e.status_code)
     except Exception as e:
         abort(500, e)
+
+
 
 @app.route('/tooloop/api/v1.0/appcenter/uninstall/<string:name>', methods=['GET'])
-def uninstall_app(name):
-    appcenter.uninstall(name)
-
+def uninstall_package(name):
     try:
+        appcenter.uninstall(name)
         return jsonify({ 'message' : name+' uninstalled successfully' })
+    except InvalidUsage as e:
+        return make_response(e.message, e.status_code)
     except Exception as e:
         abort(500, e)
+
+
+
+
+
+
 
 
 # services
