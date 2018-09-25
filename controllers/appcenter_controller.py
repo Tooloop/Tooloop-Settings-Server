@@ -1,197 +1,263 @@
 # -*- coding: utf-8 -*-
 
 from flask import Flask, render_template, abort
+
 from os import listdir, rename, mkdir, chown, utime
 from os.path import isdir, isfile, join
 import pwd
 import grp
-from subprocess import call
+from subprocess import Popen, PIPE, call
 import json
+
+import apt
+import apt_pkg
+import sys
+# from apt.progress import base
+
 from utils.file_utils import *
 from shutil import copy, copytree, rmtree
 
 
-
-class AppDefinition(object):
+# TODO: inherit from apt.package
+class Package(object):
     def __init__(self, 
-                 name=None,
-                 description=None,
-                 media=None,
+                 package_name=None,
                  version=None,
-                 last_updated=None,
-                 license=None,
-                 category=None,
-                 tags=None,
-                 developer=None,
+                 maintainer=None,
                  homepage=None,
-                 compatibility=None,
+                 bugs=None,
+                 name=None,
+                 short_description=None,
+                 long_description=None,
+                 media=None,
+                 section=None,
+                 architecture=None,
+                 pre_depends=None,
+                 depends=None,
+                 recommends=None,
+                 suggests=None,
                  has_controller=False, 
                  has_settings=False):
-        self.name = name
-        self.description = description
-        self.media = media
+        self.package_name = package_name
         self.version = version
-        self.last_updated = last_updated
-        self.license = license
-        self.category = category
-        self.tags = tags
-        self.developer = developer
+        self.maintainer = maintainer
         self.homepage = homepage
-        self.compatibility = compatibility
+        self.bugs = bugs
+        self.name = name
+        self.short_description = short_description
+        self.long_description = long_description
+        self.media = media
+        self.section = section
+        self.architecture = architecture
+        self.pre_depends = pre_depends
+        self.depends = depends
+        self.recommends = recommends
+        self.suggests = suggests
         self.has_controller = has_controller
         self.has_settings = has_settings
 
     def to_dict(self):
         return {
-            'name': self.name,
-            'description': self.description,
-            'media': self.media,
+            'package_name': self.package_name,
             'version': self.version,
-            'last_updated': self.last_updated,
-            'license': self.license,
-            'category': self.category,
-            'tags': self.tags,
-            'developer': self.developer,
+            'maintainer': self.maintainer,
             'homepage': self.homepage,
-            'compatibility': self.compatibility,
+            'bugs': self.bugs,
+            'name': self.name,
+            'short_description': self.short_description,
+            'long_description': self.long_description,
+            'media': self.media,
+            'section': self.section,
+            'architecture': self.architecture,
+            'pre_depends': self.pre_depends,
+            'depends': self.depends,
+            'recommends': self.recommends,
+            'suggests': self.suggests,
             'has_controller': self.has_controller,
-            'has_settings': self.has_settings,
+            'has_settings': self.has_settings
         }
 
 
+
+# class TextInstallProgress(InstallProgress):
+
+#     def __init__(self):
+#         apt.progress.InstallProgress.__init__(self)
+#         self.last = 0.0
+
+#     def updateInterface(self):
+#         InstallProgress.updateInterface(self)
+#         if self.last >= self.percent:
+#             return
+#         sys.stdout.write("\r[%s] %s\n" % (self.percent, self.status))
+#         sys.stdout.flush()
+#         self.last = self.percent
+
+#     def conffile(self, current, new):
+#         print "conffile prompt: %s %s" % (current, new)
+
+#     def error(self, errorstr):
+#         print "got dpkg error: '%s'" % errorstr
 
 
 
 class AppCenter(object):
     """Holds information of available apps."""
-    def __init__(self, presentation, flask):
+    def __init__(self, presentation_controller, flask):
         super(AppCenter, self).__init__()
-        self.presentation = presentation
-        self.app_path = '/assets/apps/'
+        self.presentation_controller = presentation_controller
         self.root_path = flask.root_path
-        self.available_apps = []
-        self.check_available_apps()
-        self.installed_app_definition = self.app_definition_from_bundle(self.root_path+'/installed_app')
-        self.installed_app_controller = None
+        self.package_path = '/assets/packages/'
+        self.packages = None
+        # self.update_packages()
 
-        if not self.installed_app_definition:
+        # get information of installed packages
+        self.installed_presentation = None
+        self.installed_presentation_controller = None
+        # TODO
+        # self.installed_presentation = self.read_package_information(self.root_path+'/installed_app')
+        # self.installed_presentation_controller = None
+
+        if not self.installed_presentation:
             return
 
-        # import settings controller
-        if self.installed_app_definition.has_controller:
-            installed_app_module = __import__('installed_app.controller', fromlist=['InstalledApp'])
-            InstalledApp = getattr(installed_app_module, 'InstalledApp')
-            self.installed_app_controller = InstalledApp(flask)
+        # TODO
+        # import custom settings controller
+        # if self.installed_presentation.has_controller:
+        #     installed_app_module = __import__('installed_app.controller', fromlist=['InstalledApp'])
+        #     InstalledApp = getattr(installed_app_module, 'InstalledApp')
+        #     self.installed_presentation_settings_controller = InstalledApp(flask)
 
         # add settings page route
-        @flask.route("/appsettings")
-        def render_appsettings():
-            if self.installed_app_definition.has_settings:
-                return render_template('settings.html', page='appsettings', installed_app = self.installed_app_definition, app_controller = self.installed_app_controller)
-            else:
-                abort(404)
+        # @flask.route("/appsettings")
+        # def render_appsettings():
+        #     if self.installed_presentation.has_settings:
+        #         return render_template('settings.html', page='appsettings', installed_app = self.installed_presentation, app_controller = self.installed_presentation_settings_controller)
+        #     else:
+        #         abort(404)
 
 
-    def get_installed_app(self):
-        return self.installed_app_definition
+    def get_installed_presentation(self):
+        return self.installed_presentation
 
-    def get_installed_app_controller(self):
-        return self.installed_app_controller
+    def get_installed_presentation_controller(self):
+        return self.installed_presentation_controller
 
-    def get_availeble_apps(self):
-        return self.available_apps
-
-
-    def check_available_apps(self):
-        self.available_apps = []
-        directory = listdir(self.app_path)
-        for app in directory:
-            if isfile(self.app_path+app+'/bundle/app.json'):
-                app_definition = self.app_definition_from_bundle(self.app_path+app+'/bundle')
-                if app_definition:
-                    self.available_apps.append(app_definition)
-        self.available_apps.sort(key=lambda x : x.name)
+    def get_availeble_packages(self):
+        return self.packages
 
 
-    def app_definition_from_bundle(self, bundle_path):
+    # TODO: this can be slow, maybe we shouldn’t do this at app start/boot store result
+    def update_packages(self):
+        self.packages = {
+            'presentations': [],
+            'addons': []
+        }
 
-        if not isfile(bundle_path+"/app.json"):
+        # update local repository
+        ps = Popen('/opt/tooloop/scripts/tooloop-update-packages', shell=True, stdout=PIPE)
+        
+        # search for tooloop packages
+        ps = Popen('aptitude -F"%p" search "?section(tooloop)"', shell=True, stdout=PIPE)
+        output = ps.stdout.read()
+        ps.stdout.close()
+        ps.wait()
+        print(output)
+
+        # for package in directory:
+        #     if isfile(self.package_path+package+XXXXXXXXX'.deb'):
+        #         package = self.read_package_information(self.package_path+package+'/xxxxxxxx')
+        #         if package:
+        #             if '/tooloop/addon' in package.section:
+        #                 self.packages['addons'].append(package)
+        #             else if '/tooloop/presentation' in package.section:
+        #                 self.packages['presentations'].append(package)
+        #             else:
+        #                 # TODO: log error, no type
+        #                 pass
+        # self.packages.sort(key=lambda x : x.name)
+
+
+    def read_package_information(self, deb_file):
+
+        if not isfile(deb_file):
             return None
 
-        app_definition = AppDefinition()
+        package = Package()
 
-        with open(bundle_path+"/app.json") as json_data:
-            d = json.load(json_data)
+        # TODO: read info from control file
 
-            app_definition.name = d.get('name', None)
-            app_definition.description = d.get('description', None)
-            app_definition.media = d.get('media', [])
-            app_definition.version = d.get('version', None)
-            app_definition.last_updated = d.get('last_updated', None)
-            app_definition.license = d.get('license', None)
-            app_definition.category = d.get('category', None)
-            app_definition.tags = d.get('tags', None)
-            app_definition.developer = d.get('developer', None)
-            app_definition.homepage = d.get('homepage', None)
-            app_definition.compatibility = d.get('compatibility', None)
+        # TODO: look up fils in /opt/tooloop/settings-server/installed_app
+        # package.has_controller = isfile(bundle_path+'/controller.py')
+        # package.has_settings = isfile(bundle_path+'/settings.html')
 
-        app_definition.has_controller = isfile(bundle_path+'/controller.py')
-        app_definition.has_settings = isfile(bundle_path+'/settings.html')
-
-        return app_definition
+        return package
 
 
 
-    def install(self, app):
-        if isdir(self.app_path + app):
-            # TODO: in case of an exception roll back and re-install old app
+    def install(self, package):
+        cache = apt.Cache()
+        # cache = apt.Cache(apt.progress.OpTextProgress())
+        # fprogress = apt.progress.TextFetchProgress()
+        # iprogress = TextInstallProgress()
 
-            # stop running presentation
-            self.presentation.stop()
+        pkg = cache["3dchess"]
 
-            # uninstall old app
-            if isfile(self.root_path+'/installed_app/uninstall.sh'):
-                call(['/bin/sh', self.root_path + '/installed_app/uninstall.sh'])
+        if pkg.is_installed:
+            print "%s is already installed" % pkg.name
+        else:
+            pkg.mark_install()
 
-            # delete old bundle
-            if isdir(self.root_path+'/installed_app'):
-                rmtree(self.root_path+'/installed_app')
+        try:
+            print "Installing %s" % pkg.name
+            result = cache.commit()
+            print result
+        except Exception, arg:
+            print >> sys.stderr, "Sorry, package installation failed [{err}]".format(err=str(arg))
 
-            # install new app dependencies
-            if isfile(self.app_path+app+'/bundle/install.sh'):
-                call(['/bin/sh', self.app_path+app+'/bundle/install.sh'])
 
-            # copy bundle stuff
-            copytree(self.app_path+app+'/bundle', self.root_path+'/installed_app')
+        # TODO: if package is apresentation and there is a presentation already
+        # --> return with error
 
-            # copy data stuff
-            if isdir(self.app_path+app+'/data'):
-                if not isdir('/assets/data'):
-                    copytree(self.app_path+app+'/data', '/assets/data')
-                else:
-                    self.copytree(self.app_path+app+'/data', '/assets/data')
+        # stop running presentation
+        # self.presentation_controller.stop()
 
-            # make Python aware of controller module
-            if isfile(self.root_path+'/installed_app/controller.py'):
-                self.touch(self.root_path+'/installed_app/__init__.py')
+        # TODO: apt install package
 
-            # copy presentation
-            if isdir('/assets/presentation'):
-                rmtree('/assets/presentation')
-            copytree(self.app_path+app+'/presentation', '/assets/presentation')
+        # make Python aware of controller module
+        # if isfile(self.root_path+'/installed_app/controller.py'):
+        #     self.touch(self.root_path+'/installed_app/__init__.py')
 
-            # chown everything to tooloop user
-            self.chown_recursive(self.root_path, 'tooloop', 'tooloop')
-            self.chown_recursive('/assets/data', 'tooloop', 'tooloop')
-            self.chown_recursive('/assets/presentation', 'tooloop', 'tooloop')
+        # restart presentation
+        # self.presentation_controller.start()
 
-            # restart presentation
-            self.presentation.start()
+        # get information and update self.installed_presentation
+        # self.installed_presentation = self.read_package_information(self.root_path+'/installed_app')
 
-            # get information and update self.installed_app_definition
-            self.installed_app_definition = self.app_definition_from_bundle(self.root_path+'/installed_app')
 
-            return self.installed_app_definition
+    def uninstall(self, package):
+        # TODO: if current presentation depends on package
+        # --> return with error
+
+        # TODO: if is current presentation
+        # --> stop running presentation
+
+        cache = apt.Cache()
+        # cache = apt.Cache(apt.progress.OpTextProgress())
+        # fprogress = apt.progress.TextFetchProgress()
+        # iprogress = TextInstallProgress()
+
+        if pkg.is_installed:
+            pkg.mark_delete()
+        else:
+            print "%s is not installed" % pkg.name
+
+        try:
+            print "Unnstalling %s" % pkg.name
+            result = cache.commit()
+            print result
+        except Exception, arg:
+            print >> sys.stderr, "Sorry, purging package failed [{err}]".format(err=str(arg))
 
 
 

@@ -56,8 +56,8 @@ app.jinja_loader = template_loader
 def render_dashboard():
     return render_template('dashboard.html', 
         page = 'dashboard', 
-        installed_app = appcenter.get_installed_app(),
-        app_controller = appcenter.get_installed_app_controller(),
+        installed_presentation = appcenter.get_installed_presentation(),
+        installed_presentation_controller = appcenter.get_installed_presentation_controller(),
         hostname = system.get_hostname(),
         display_state = system.get_display_state(),
         audio_mute = system.get_audio_mute(),
@@ -66,25 +66,20 @@ def render_dashboard():
         screenshot_service_running = services.is_screenshot_service_running()
     )
 
-@app.route("/network")
-def render_network():
-    return render_template('network.html', 
-        page='network', 
-        installed_app = appcenter.get_installed_app(),
-        interfaces = [{
-            'ip': 'x.x.x.x',
-            'subnet_mask': '255.255.255.0',
-            'gateway': 'x.x.x.x'
-        }]
-    )
+# @app.route("/network")
+# def render_network():
+#     return render_template('network.html', 
+#         page='network', 
+#         installed_presentation = appcenter.get_installed_presentation()
+#     )
 
 @app.route("/appcenter")
 def render_appcenter():
-    appcenter.check_available_apps()
+    appcenter.update_packages()
     return render_template('appcenter.html', 
         page='appcenter', 
-        installed_app = appcenter.get_installed_app(),
-        available_apps = appcenter.get_availeble_apps(),
+        installed_presentation = appcenter.get_installed_presentation(),
+        availeble_packages = appcenter.get_availeble_packages(),
         time_stamp = time.time(),
     )
 
@@ -92,7 +87,7 @@ def render_appcenter():
 def render_services():
     return render_template('services.html', 
         page='services', 
-        installed_app = appcenter.get_installed_app(),
+        installed_presentation = appcenter.get_installed_presentation(),
         services = services.get_status(),
     )
 
@@ -100,7 +95,7 @@ def render_services():
 def render_system():
     return render_template('system.html', 
         page='system',
-        installed_app = appcenter.get_installed_app(),
+        installed_presentation = appcenter.get_installed_presentation(),
         os_version = "0.9 alpha",
         hostname = system.get_hostname(),
         ip_address = system.get_ip(),
@@ -328,23 +323,25 @@ def get_availeble_apps():
     return jsonify(available_as_dict)
 
 @app.route('/tooloop/api/v1.0/appcenter/refresh', methods=['GET'])
-def check_available_apps():
-    appcenter.check_available_apps()
+def update_packages():
+    appcenter.update_packages()
     return get_availeble_apps()
 
 @app.route('/tooloop/api/v1.0/appcenter/install/<string:name>', methods=['GET'])
 def install_app(name):
-    @after_this_request
-    def add_header(response):
-        response.headers['X-Foo'] = 'Parachute'
-        return response
-
     appcenter.install(name)
-
-    # call(['systemctl','restart','tooloop-settings-server'])
 
     try:
         return jsonify(appcenter.get_installed_app().to_dict())
+    except Exception as e:
+        abort(500, e)
+
+@app.route('/tooloop/api/v1.0/appcenter/uninstall/<string:name>', methods=['GET'])
+def uninstall_app(name):
+    appcenter.uninstall(name)
+
+    try:
+        return jsonify({ 'message' : name+' uninstalled successfully' })
     except Exception as e:
         abort(500, e)
 
