@@ -4,17 +4,48 @@ import os
 import time
 import pexpect
 import fileinput
+import json
+import datetime
 from utils.time_utils import *
 from utils.cpu_load import CpuLoad
+from crontab import CronTab
 
 
 class System(object):
     """Holds information of the tooloop box."""
-    def __init__(self, augtool):
+    def __init__(self, app):
         super(System, self).__init__()
-        self.augtool = augtool
+        self.app = app
         self.cpu_load = CpuLoad()
         self.needs_reboot = False
+        # read runtime schedule from disk
+        try:
+            with open(self.app.root_path+'/data/runtime-schedule.json') as json_data:
+                self.runtime_schedule = json.load(json_data)
+        except Exception as e:
+            self.runtime_schedule = {
+                'startup': {
+                    'enabled': False, 
+                    'weekdays': [], 
+                    'time': {
+                        'hours': 8, 
+                        'minutes': 0
+                    }
+                },
+                'shutdown': {
+                    'enabled': False, 
+                    'type': 'poweroff', 
+                    'weekdays': [], 
+                    'time': {
+                        'hours': 20, 
+                        'minutes': 0
+                    }
+                }
+            }
+
+        self.setup_runtime_schedule()
+
+
 
     def get_hostname(self):
         try:
@@ -57,7 +88,9 @@ class System(object):
 
     def get_ip(self):
         try:
-            return check_output(['hostname', '-I']).rstrip('\n').split()[0]
+            return check_output(['hostname', '-I']).rstrip('\n').split()
+        except IndexError as e:
+            return ''
         except Exception as e:
             raise
 
@@ -206,12 +239,19 @@ class System(object):
 
     def set_audio_volume(self, volume):
         call('su tooloop -c "pactl --server=/run/user/1000/pulse/native set-sink-volume 0 '+str(volume)+'%"', shell=True)
-        # call(['pactl', '--server=/run/user/1000/pulse/native', 'set-sink-volume', '0', str(volume)+'%'])
 
     def set_audio_mute(self, mute):
         mute_param = '1' if mute else '0'
         call('su tooloop -c "pactl --server=/run/user/1000/pulse/native set-sink-mute 0 '+mute_param+'"', shell=True)
-        # call(['pactl', '--server=/run/user/1000/pulse/native', 'set-sink-mute', '0', mute_param])
+
+    def get_audio_mute(self):
+        try:
+            for line in check_output('su tooloop -c "pactl --server=/run/user/1000/pulse/native list sinks"', shell=True).split('\n'):
+                if 'Mute' in line:
+                    return 'yes' in line
+        except Exception as e:
+            raise
+
 
 
 
@@ -232,3 +272,107 @@ class System(object):
             raise ValueError("Display state can only be one of 'on', 'off' or 'standby'")
         call(['xset', 'dpms', 'force', state.lower()])
         return self.get_display_state()
+
+
+    def get_runtime_schedule(self):
+        return self.runtime_schedule
+
+    def set_runtime_schedule(self, schedule):
+        # update data
+        self.set_single_schedule('startup', schedule)
+        self.set_single_schedule('shutdown', schedule)
+        # write changes to disk
+        try:
+            with open(self.app.root_path+'/data/runtime-schedule.json', 'w') as json_file:
+                json.dump(self.runtime_schedule, json_file, indent=4)
+        except Exception as e:
+            raise e
+        # set up the rtc wakealarm and cron jobs
+        self.setup_runtime_schedule()
+
+    def set_single_schedule(self, which, schedule):
+        if which in schedule:
+            if 'enabled' in schedule[which]:
+                self.runtime_schedule[which]['enabled'] = schedule[which]['enabled']
+            if 'type' in schedule[which]:
+                if schedule[which]['type'] in ['blackout', 'poweroff']:
+                    self.runtime_schedule[which]['type'] = schedule[which]['type']
+            if 'weekdays' in schedule[which]:
+                self.runtime_schedule[which]['weekdays'] = schedule[which]['weekdays']
+            if 'time' in schedule[which]:
+                if 'hours' in schedule[which]['time']:
+                    self.runtime_schedule[which]['time']['hours'] = int(schedule[which]['time']['hours'])
+                if 'minutes' in schedule[which]['time']:
+                    self.runtime_schedule[which]['time']['minutes'] = int(schedule[which]['time']['minutes'])
+        
+
+    def setup_runtime_schedule(self):
+        crontab = CronTab(user='tooloop')
+        
+        # empty wakealarm
+        call('echo 0 > /sys/class/rtc/rtc0/wakealarm', shell=True)
+
+        # remove cron jobs
+        crontab.remove_all('display-on')
+        crontab.remove_all('poweroff')
+        crontab.remove_all('blackout')
+        crontab.write()
+
+        # start up
+        if self.runtime_schedule['startup']['enabled'] and len(self.runtime_schedule['startup']['weekdays']) > 0:
+            if self.runtime_schedule['shutdown']['type'] == 'poweroff':
+                # set rtc wake alarm
+                call('echo '+str(self.get_next_startup_time())+' > /sys/class/rtc/rtc0/wakealarm', shell=True)
+            elif self.runtime_schedule['shutdown']['type'] == 'blackout':
+                # set startup cron job
+                job = crontab.new(command='env DISPLAY=:0.0 /opt/tooloop/scripts/tooloop-display-on && env DISPLAY=:0.0 /opt/tooloop/scripts/tooloop-presentation-reset')
+                job.hour.on(self.runtime_schedule['startup']['time']['hours'])
+                job.minute.on(self.runtime_schedule['startup']['time']['minutes'])
+                job.dow.on(*self.runtime_schedule['startup']['weekdays'])
+                crontab.write()
+
+        # shutdown
+        if self.runtime_schedule['shutdown']['enabled'] and len(self.runtime_schedule['shutdown']['weekdays']) > 0:
+            if self.runtime_schedule['shutdown']['type'] == 'poweroff':
+                job = crontab.new(command='sudo poweroff')
+            elif self.runtime_schedule['shutdown']['type'] == 'blackout':
+                job = crontab.new(command='env DISPLAY=:0.0 /opt/tooloop/scripts/tooloop-blackout')
+            job.hour.on(self.runtime_schedule['shutdown']['time']['hours'])
+            job.minute.on(self.runtime_schedule['shutdown']['time']['minutes'])
+            job.dow.on(*self.runtime_schedule['shutdown']['weekdays'])
+            crontab.write()
+
+
+
+    def get_next_startup_time(self):
+        # What weeday is today?
+        weekday = get_iso_weekday()
+
+        # What’s the next weekday to start up?
+        next_weekday = min(self.runtime_schedule['startup']['weekdays'])
+        for day in sorted(self.runtime_schedule['startup']['weekdays']):
+            if day > weekday:
+                next_weekday = day
+                break
+
+        # Create a date of today at start up time
+        next_startup = datetime.datetime.today().replace(
+            hour=self.runtime_schedule['startup']['time']['hours'],
+            minute=self.runtime_schedule['startup']['time']['minutes'],
+            second=0, 
+            microsecond=0
+        )
+
+        # If it is after the daily startup time,
+        # add the days between today and the next startup day
+        now = datetime.datetime.now().time()
+        startup_time = datetime.time(
+            hour=self.runtime_schedule['startup']['time']['hours'],
+            minute=self.runtime_schedule['startup']['time']['minutes']
+        )
+        if now > startup_time:
+            delta_days = ((next_weekday + 7) - weekday) % 7
+            next_startup += datetime.timedelta(days=delta_days)
+
+        # Convert time to unix epoch time (in time utils)
+        return datetime_to_unix_time_millis(next_startup)

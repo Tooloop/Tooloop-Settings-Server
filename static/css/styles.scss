@@ -88,6 +88,12 @@ strong {
   font-weight: 300;
 }
 
+@media (max-width: ($max-mobile-width)) {
+  .hidden_mobile {
+    display: none;
+  }
+}
+
 
 // -----------------------------------------------------------------------------
 // Sidebar
@@ -304,9 +310,14 @@ body.appsettings #sidebar a.appsettings {
   width: 100%;
   padding: 1em 2em 2em 2em;
 }
+
+.settings-table + .settings-table {
+    margin-top: -3rem;
+}
+
 .settings-table td {
-  padding-top: 1em;
-  padding-bottom: 1em;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
 }
 
 // no padding for nested tables
@@ -318,7 +329,27 @@ body.appsettings #sidebar a.appsettings {
   color: #666;
   text-align: right;
   padding-right: 1.5em;
-  // width: 20%;
+  width: 10rem;
+  // hyphens: auto;
+}
+
+// tablet
+@media (max-width: $min-wide-desktop-width) {
+  .label-column {
+    width: 20%;
+  }
+}
+// tablet
+@media (max-width: $min-desktop-width) {
+  .label-column {
+    width: 30%;
+  }
+}
+// mobile
+@media (max-width: ($max-mobile-width)) {
+  .label-column {
+    width: 50%;
+  }
 }
 
 .top {
@@ -337,7 +368,8 @@ body.appsettings #sidebar a.appsettings {
 
 .settings-table h2 {
   font-size: 1em;
-  margin: 0;
+  font-weight: normal;
+  margin: 2rem 0 0 0;
   color: $gray3;
   text-shadow:
      2px 0px 0px $background-color,
@@ -355,8 +387,18 @@ body.appsettings #sidebar a.appsettings {
   );
 }
 
+// first header
+.settings-table > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(1) > h2 {
+  margin: 0;
+}
+
 .settings-table label {
   font-size: 0.75em;
+  white-space: nowrap;
+}
+
+.settings-table form {
+  line-height: 2;
 }
 
 
@@ -421,7 +463,7 @@ body.appsettings #sidebar a.appsettings {
   display: initial;
   content: "Display in suspend";
 }
-
+  
 #screenshot-thumbnail {
   width: 100%;
   float: left;
@@ -551,6 +593,8 @@ textarea {
   background-color: white;
   padding: 0.5em;
   border-radius: 2px;
+  width: 100%;
+  max-width: 15rem;
 }
 
 textarea {
@@ -669,10 +713,25 @@ input.switch:checked ~ label:after
   margin-left: 2em;
 }
 
-.switch ~ * {
-    clear: both;
-    display: block;
-    margin-top: 2.4em;
+
+// toggle button
+
+input.toggle-button { display:none; }
+input.toggle-button + label { 
+  color:white;
+  background-color: $gray5;
+  text-align: center;
+  display: inline-block;
+  min-width: 1.2rem;
+  height: 1.2rem;
+  line-height: 1.2rem;
+  -webkit-user-select: none; /* Safari */        
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE10+/Edge */
+  user-select: none; /* Standard */
+}
+input.toggle-button:checked + label {
+  background-color: $pink;
 }
 
 
