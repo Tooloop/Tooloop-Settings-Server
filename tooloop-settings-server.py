@@ -58,7 +58,7 @@ def render_dashboard():
     return render_template('dashboard.html', 
         page = 'dashboard', 
         installed_presentation = appcenter.get_installed_presentation(),
-        installed_presentation_controller = appcenter.get_installed_presentation_controller(),
+        installed_presentation_settings_controller = appcenter.get_installed_presentation_settings_controller(),
         hostname = system.get_hostname(),
         display_state = system.get_display_state(),
         audio_mute = system.get_audio_mute(),
@@ -76,11 +76,10 @@ def render_dashboard():
 
 @app.route("/appcenter")
 def render_appcenter():
-    appcenter.update_packages()
     return render_template('appcenter.html', 
         page='appcenter', 
         installed_presentation = appcenter.get_installed_presentation(),
-        availeble_packages = appcenter.get_availeble_packages(),
+        available_packages = appcenter.get_available_packages(),
         time_stamp = time.time(),
     )
 
@@ -316,17 +315,18 @@ def get_installed_app():
     return jsonify(appcenter.get_installed_app().to_dict())
 
 @app.route('/tooloop/api/v1.0/appcenter/available', methods=['GET'])
-def get_availeble_apps():
-    available = appcenter.get_availeble_apps()
-    available_as_dict = []
-    for app in available:
-        available_as_dict.append(app.to_dict())
-    return jsonify(available_as_dict)
+def get_available_packages():
+    # available = appcenter.get_available_packages()
+    # available_as_dict = []
+    # for app in available:
+    #     available_as_dict.append(app.to_dict())
+    # return jsonify(available_as_dict)
+    return jsonify(appcenter.get_available_packages())
 
 @app.route('/tooloop/api/v1.0/appcenter/refresh', methods=['GET'])
 def update_packages():
     appcenter.update_packages()
-    return get_availeble_apps()
+    return get_available_packages()
 
 
 

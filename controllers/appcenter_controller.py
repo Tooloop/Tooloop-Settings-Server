@@ -152,13 +152,6 @@ class AppCenter(object):
 
         self.apt_cache = apt.Cache()
         self.packages = None
-        # TODO: if not data/packages.json
-        if True:
-            self.update_packages()
-        else:
-            # read from json
-            pass
-            
 
         # get information of installed packages
         self.installed_presentation = None
@@ -192,34 +185,35 @@ class AppCenter(object):
     def get_installed_presentation_settings_controller(self):
         return self.installed_presentation_settings_controller
 
-    def get_availeble_packages(self):
+    def get_available_packages(self):
+        # lazy loading
+        if not self.packages:
+            self.packages = {
+                'presentations': [],
+                'addons': []
+            }
+            # search for tooloop packages
+            ps = Popen('aptitude -F"%p" search "?section(tooloop)"', shell=True, stdout=PIPE)
+            output = ps.stdout.read()
+            ps.stdout.close()
+            ps.wait()
+            packages = output.splitlines()
+            for index in range(len(packages)):
+                packages[index] = packages[index].replace(" ", "")
+
+            for package in packages:
+                pkg = self.apt_cache[package]
+                if "tooloop/presentation" in pkg.section:
+                    self.packages['presentations'].append(pkg)
+                elif "tooloop/addon" in pkg.section:
+                    self.packages['addons'].append(pkg)
+
         return self.packages
 
+
     def update_packages(self):
-        self.packages = {
-            'presentations': [],
-            'addons': []
-        }
         # update local repository
         ps = Popen('/opt/tooloop/scripts/tooloop-update-packages', shell=True, stdout=PIPE)
-    
-        # search for tooloop packages
-        ps = Popen('aptitude -F"%p" search "?section(tooloop)"', shell=True, stdout=PIPE)
-        output = ps.stdout.read()
-        ps.stdout.close()
-        ps.wait()
-        packages = output.splitlines()
-        for index in range(len(packages)):
-            packages[index] = packages[index].replace(" ", "")
-
-        cache = apt.Cache()
-        for package in packages:
-            pkg = cache[package]
-            if "tooloop/presentation" in pkg.section:
-                self.packages['presentations'].append(pkg)
-            elif "tooloop/addon" in pkg.section:
-                self.packages['addons'].append(pkg)
-
 
 
     def read_package_information(self, package):

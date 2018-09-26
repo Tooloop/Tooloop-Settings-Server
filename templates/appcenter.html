@@ -2,40 +2,65 @@
 
 {% block content %}
 
-{% if installed_app %}
+{% if installed_presentation %}
 <div id="active-app-area" class="area">
     
     <img src="/app/preview_image.jpg?{{time_stamp}}" />
     <div id="active-app-description">
         <span class="current-app">Currently installed</span>
-        <h1>{{installed_app.name}}</h1>
+        <h1>{{installed_package.shortname}}</h1>
         <p>
-            Version {{installed_app.version}}<br/>
-            By <a href="{{installed_app.homepage}}">{{installed_app.developer}}</a>
+            Version {{installed_package.version}}<br/>
+            By <a href="{{installed_package.candidate.homepage}}">{{installed_package.developer}}</a>
         </p>
-        {% if installed_app.has_settings %}
+        {% if installed_package.has_settings %}
         <p><button onclick="document.location='/appsettings';">Settings</button></p>
         {% endif %}
-        <span>{{installed_app.description}}</span>
+        <span>{{installed_package.candidate.summary}}</span>
   </div>
 </div>
 {% endif %}
 
 <div id="appcenter-area" class="area">
-    {% for app in available_apps if not app.name == installed_app.name %}
+
+    <h2>Presentations</h2>
+    {% for package in available_packages.presentations if not package.shortname == installed_presentation.name %}
     <div class="app">
-        <img class="preview-image" src="/appcenter/{{app.name}}/bundle/preview_image.jpg" />
+        <img class="preview-image" src="https://via.placeholder.com/960x540" />
         <div class="info-area">
             <div class="info">
-                <strong class="name">{{app.name}}</strong>
-                <span class="developer">By <a href="{{app.homepage}}">{{app.developer}}</a></span>
-                <div class="description">{{app.description}}</div>
-                <button onclick="install('{{app.name}}')">Install</button>
-                <!-- <button onclick="">Details</button> -->
+                <strong class="name">{{package.candidate.record["Name"]}}</strong>
+                <span class="developer">By <a href="{{package.candidate.homepage}}">{{package.candidate.record["Maintainer"]}}</a></span>
+                <div class="description">{{package.candidate.summary}}</div>
+                {% if package.is_installed %}
+                    <button onclick="uninstall('{{package.shortname}}')">Remove</button>
+                {% else %}
+                    <button onclick="install('{{package.shortname}}')">Install</button>
+                {% endif %}
             </div>
         </div>
     </div>
     {% endfor %}
+
+    <h2 style="clear:both">Addons</h2>
+    {% for package in available_packages.addons if not package.shortname == installed_presentation.name %}
+    <div class="app">
+        <img class="preview-image" src="https://via.placeholder.com/960x540" />
+        <div class="info-area">
+            <div class="info">
+                <strong class="name">{{package.candidate.record["Name"]}}</strong>
+                <span class="developer">By <a href="{{package.candidate.homepage}}">{{package.developer}}</a></span>
+                <div class="description">{{package.candidate.summary}}</div>
+                {% if package.is_installed %}
+                    <button onclick="uninstall('{{package.shortname}}')">Remove</button>
+                {% else %}
+                    <button onclick="install('{{package.shortname}}')">Install</button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
 </div>
 {% endblock %}
 
@@ -46,16 +71,24 @@
     $(document).ready(function() {
     });
 
+    {#
+    if(!confirm("Do you want to install "+name+"? {{installed_presentation.shortname}} will be uninstalled!") ) {
+        return;
+    }
+    #}
 
     var install = function(name) {
-        {% if installed_app %}
-            if(!confirm("Do you want to install "+name+"? {{installed_app.name}} will be uninstalled!") ) {
-                return;
-            }
-        {% endif %}
-
         $.ajax({
             url: "/tooloop/api/v1.0/appcenter/install/"+name
+        }).done(function( data ) {
+           location.reload();
+        });
+    }
+
+
+    var uninstall = function(name) {
+        $.ajax({
+            url: "/tooloop/api/v1.0/appcenter/uninstall/"+name
         }).done(function( data ) {
            location.reload();
         });
