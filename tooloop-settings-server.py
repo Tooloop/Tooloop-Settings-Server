@@ -336,7 +336,7 @@ def install_package(name):
         appcenter.install(name)
         return jsonify({ 'message' : name+' installed successfully' })
     except InvalidUsage as e:
-        return make_response(e.message, e.status_code)
+        return make_response(jsonify({'message':e.message}), e.status_code)
     except Exception as e:
         abort(500, e)
 
@@ -348,7 +348,7 @@ def uninstall_package(name):
         appcenter.uninstall(name)
         return jsonify({ 'message' : name+' uninstalled successfully' })
     except InvalidUsage as e:
-        return make_response(e.message, e.status_code)
+        return make_response(jsonify({'message':e.message}), e.status_code)
     except Exception as e:
         abort(500, e)
 
