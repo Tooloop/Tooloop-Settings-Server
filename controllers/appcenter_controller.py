@@ -152,13 +152,17 @@ class AppCenter(object):
 
         self.apt_cache = apt.Cache()
         self.packages = None
+        self.get_available_packages()
 
         # get information of installed packages
         self.installed_presentation = None
         self.installed_presentation_settings_controller = None
-        # TODO
-        # self.installed_presentation = self.read_package_information(self.root_path+'/installed_app')
-        # self.installed_presentation_settings_controller = None
+
+        # check installed presentation
+        for presentation in self.packages['presentations']:
+            if presentation.is_installed:
+                self.installed_presentation = presentation
+                break
 
         if not self.installed_presentation:
             return
@@ -253,6 +257,7 @@ class AppCenter(object):
             # stop running presentation
             if "tooloop/presentation" in pkg.section:
                 self.presentation_controller.stop()
+            
             # install
             result = self.apt_cache.commit(TextFetchProgress(), TextInstallProgress()) # True if all was fine
             self.apt_cache.update()
@@ -262,26 +267,31 @@ class AppCenter(object):
             # if isfile(self.root_path+'/installed_app/controller.py'):
             #     self.touch(self.root_path+'/installed_app/__init__.py')
 
-            # restart presentation
-            # self.presentation_controller.start()
-            # get information and update self.installed_presentation
-            # self.installed_presentation = self.read_package_information(package)
+
+            if "tooloop/presentation" in pkg.section:
+                self.installed_presentation = pkg
+                # restart presentation
+                self.presentation_controller.start()
+
         except Exception, arg:
             raise Exception("Sorry, package installation failed [{err}]".format(err=str(arg)))
 
 
     def uninstall(self, package):
+        pkg = self.apt_cache[package]
+
         # if current presentation depends on package (e. g. an addon)
         if self.installed_presentation:
-            for dep in self.installed_presentation.candidate.dependencies:
-                if package in dep.name:
-                    # 409 – Conflict
-                    raise InvalidUsage('Cannot uninstall '+package+ ' because current presentation '+self.installed_presentation.name+' depends on it.', status_code=409);
+            for dep_list in self.installed_presentation.candidate.dependencies:
+                for dep in dep_list:
+                    if package in dep.name:
+                        # 409 – Conflict
+                        raise InvalidUsage('Cannot uninstall '+package+ ' because current presentation '+self.installed_presentation.name+' depends on it.', status_code=409);
             # if it is the current presentation
             if pkg.name == self.installed_presentation.name:
                 self.presentation_controller.stop()
+                self.installed_presentation = None
 
-        pkg = self.apt_cache[package]
 
         # only handle tooloop packages
         if not "tooloop" in pkg.section:

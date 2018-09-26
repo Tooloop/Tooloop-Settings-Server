@@ -5,18 +5,21 @@
 {% if installed_presentation %}
 <div id="active-app-area" class="area">
     
-    <img src="/app/preview_image.jpg?{{time_stamp}}" />
+    <img src="https://via.placeholder.com/960x540" />
     <div id="active-app-description">
         <span class="current-app">Currently installed</span>
-        <h1>{{installed_package.shortname}}</h1>
+        <h1>{{installed_presentation.shortname}}</h1>
         <p>
-            Version {{installed_package.version}}<br/>
-            By <a href="{{installed_package.candidate.homepage}}">{{installed_package.developer}}</a>
+            Version {{installed_presentation.candidate.version}}<br/>
+            By <a href="{{installed_presentation.candidate.homepage}}">{{installed_presentation.candidate.record["Maintainer"]}}</a>
         </p>
-        {% if installed_package.has_settings %}
-        <p><button onclick="document.location='/appsettings';">Settings</button></p>
-        {% endif %}
-        <span>{{installed_package.candidate.summary}}</span>
+        <span>{{installed_presentation.candidate.summary}}</span>
+        <p>
+            <button onclick="uninstall('{{installed_presentation.shortname}}')">Remove</button>
+            {% if installed_presentation.has_settings %}
+            <button onclick="document.location='/appsettings';">Settings</button>
+            {% endif %}
+        </p>
   </div>
 </div>
 {% endif %}
@@ -29,7 +32,7 @@
         <img class="preview-image" src="https://via.placeholder.com/960x540" />
         <div class="info-area">
             <div class="info">
-                <strong class="name">{{package.candidate.record["Name"]}}</strong>
+                <strong class="name"{% if package.is_installed %} style="color: red"{% endif %}>{{package.candidate.record["Name"]}}</strong>
                 <span class="developer">By <a href="{{package.candidate.homepage}}">{{package.candidate.record["Maintainer"]}}</a></span>
                 <div class="description">{{package.candidate.summary}}</div>
                 {% if package.is_installed %}
@@ -48,7 +51,7 @@
         <img class="preview-image" src="https://via.placeholder.com/960x540" />
         <div class="info-area">
             <div class="info">
-                <strong class="name">{{package.candidate.record["Name"]}}</strong>
+                <strong class="name"{% if package.is_installed %} style="color: red"{% endif %}>{{package.candidate.record["Name"]}}</strong>
                 <span class="developer">By <a href="{{package.candidate.homepage}}">{{package.developer}}</a></span>
                 <div class="description">{{package.candidate.summary}}</div>
                 {% if package.is_installed %}

@@ -326,7 +326,8 @@ def get_available_packages():
 @app.route('/tooloop/api/v1.0/appcenter/refresh', methods=['GET'])
 def update_packages():
     appcenter.update_packages()
-    return get_available_packages()
+    # return get_available_packages()
+    return True
 
 
 
