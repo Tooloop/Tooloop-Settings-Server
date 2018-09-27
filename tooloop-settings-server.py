@@ -312,22 +312,26 @@ def reset_presentation():
 
 @app.route('/tooloop/api/v1.0/appcenter/installed', methods=['GET'])
 def get_installed_app():
-    return jsonify(appcenter.get_installed_app().to_dict())
+    return jsonify(appcenter.package_to_dict(appcenter.get_installed_presentation()))
 
 @app.route('/tooloop/api/v1.0/appcenter/available', methods=['GET'])
 def get_available_packages():
-    # available = appcenter.get_available_packages()
-    # available_as_dict = []
-    # for app in available:
-    #     available_as_dict.append(app.to_dict())
-    # return jsonify(available_as_dict)
-    return jsonify(appcenter.get_available_packages())
+    pkg_dict = {
+        'presentations': [],
+        'addons': []
+    }
+    packages = appcenter.get_available_packages()
+    for presentation in packages['presentations']:
+        pkg_dict['presentations'].append(appcenter.package_to_dict(presentation))
+    for addon in packages['addons']:
+        pkg_dict['addons'].append(appcenter.package_to_dict(addon))
+    return jsonify(pkg_dict)
+
 
 @app.route('/tooloop/api/v1.0/appcenter/refresh', methods=['GET'])
 def update_packages():
     appcenter.update_packages()
-    # return get_available_packages()
-    return True
+    return get_available_packages()
 
 
 

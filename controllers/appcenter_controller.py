@@ -21,67 +21,6 @@ from utils.exceptions import *
 from pprint import pprint
 
 
-# TODO: inherit from apt.package
-# class Package(object):
-#     def __init__(self, 
-#                  package_name=None,
-#                  version=None,
-#                  maintainer=None,
-#                  homepage=None,
-#                  bugs=None,
-#                  name=None,
-#                  short_description=None,
-#                  long_description=None,
-#                  media=None,
-#                  section=None,
-#                  architecture=None,
-#                  pre_depends=None,
-#                  depends=None,
-#                  recommends=None,
-#                  suggests=None,
-#                  has_controller=False, 
-#                  has_settings=False):
-#         self.package_name = package_name
-#         self.version = version
-#         self.maintainer = maintainer
-#         self.homepage = homepage
-#         self.bugs = bugs
-#         self.name = name
-#         self.short_description = short_description
-#         self.long_description = long_description
-#         self.media = media
-#         self.section = section
-#         self.architecture = architecture
-#         self.pre_depends = pre_depends
-#         self.depends = depends
-#         self.recommends = recommends
-#         self.suggests = suggests
-#         self.has_controller = has_controller
-#         self.has_settings = has_settings
-
-#     def to_dict(self):
-#         return {
-#             'package_name': self.package_name,
-#             'version': self.version,
-#             'maintainer': self.maintainer,
-#             'homepage': self.homepage,
-#             'bugs': self.bugs,
-#             'name': self.name,
-#             'short_description': self.short_description,
-#             'long_description': self.long_description,
-#             'media': self.media,
-#             'section': self.section,
-#             'architecture': self.architecture,
-#             'pre_depends': self.pre_depends,
-#             'depends': self.depends,
-#             'recommends': self.recommends,
-#             'suggests': self.suggests,
-#             'has_controller': self.has_controller,
-#             'has_settings': self.has_settings
-#         }
-
-
-
 
 class TextFetchProgress(apt.progress.base.AcquireProgress):
     """Monitor object for downloads controlled by the Acquire class."""
@@ -142,7 +81,6 @@ class TextInstallProgress(apt.progress.base.InstallProgress):
 
 
 
-
 class AppCenter(object):
     """Holds information of available apps."""
     def __init__(self, presentation_controller, flask):
@@ -181,6 +119,43 @@ class AppCenter(object):
         #         return render_template('settings.html', page='appsettings', installed_app = self.installed_presentation, app_controller = self.installed_presentation_settings_controller)
         #     else:
         #         abort(404)
+    
+    def package_to_dict(self, package):
+        maintainer = bugs = name = None
+        try:
+            maintainer = package.candidate.record["Maintainer"]
+        except KeyError as e:
+            pass
+
+        try:
+            bugs = package.candidate.record["Bugs"] 
+        except KeyError as e:
+            pass
+
+        try:
+            name = package.candidate.record["Name"]
+        except KeyError as e:
+            pass
+
+        return {
+            'package_name': package.shortname,
+            'version': package.candidate.version,
+            'homepage': package.candidate.homepage,
+            'maintainer': maintainer,
+            'bugs': bugs,
+            'name': name,
+            'summary': package.candidate.summary,
+            'description': package.candidate.description,
+            'section': package.section,
+            'architecture': package.architecture(),
+            # TODO:
+            # 'pre_depends': pre_depends,
+            # 'depends': depends,
+            # 'recommends': recommends,
+            # 'suggests': suggests,
+            # 'has_controller': has_controller,
+            # 'has_settings': has_settings
+        }
 
 
     def get_installed_presentation(self):
@@ -218,19 +193,9 @@ class AppCenter(object):
     def update_packages(self):
         # update local repository
         ps = Popen('/opt/tooloop/scripts/tooloop-update-packages', shell=True, stdout=PIPE)
-
-
-    def read_package_information(self, package):
-        pkg = Package()
-
-        # TODO: read info from control file
-
-        # TODO: look up fils in /opt/tooloop/settings-server/installed_app
-        # package.has_controller = isfile(bundle_path+'/controller.py')
-        # package.has_settings = isfile(bundle_path+'/settings.html')
-
-        return pkg
-
+        output = ps.stdout.read()
+        ps.stdout.close()
+        ps.wait()
 
 
     def install(self, package):

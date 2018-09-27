@@ -27,7 +27,7 @@
 <div id="appcenter-area" class="area">
 
     <h2>Presentations</h2>
-    {% for package in available_packages.presentations if not package.shortname == installed_presentation.name %}
+    {% for package in available_packages.presentations if not package.shortname == installed_presentation.shortname %}
     <div class="app">
         <img class="preview-image" src="https://via.placeholder.com/960x540" />
         <div class="info-area">
