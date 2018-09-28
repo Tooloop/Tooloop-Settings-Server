@@ -101,7 +101,10 @@
             <div id="hd-usage-diagram" class="graph"></div>
         </div>
     </div> <!-- end system-area -->
+{% endblock %}
 
+
+{% block end_of_page %}
     {% if screenshot_service_running %}
     <div id="screenshot-panel"  onclick="hideCover()">
         <!-- <a href="#" onclick="hideCover()" class="close-button">&times;</a> -->
@@ -118,7 +121,6 @@
         </div>
     </div>
 {% endblock %}
-
 
 
 {% block page_footer_scripts %}

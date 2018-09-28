@@ -22,42 +22,61 @@ from pprint import pprint
 
 
 
-class TextFetchProgress(apt.progress.base.AcquireProgress):
-    """Monitor object for downloads controlled by the Acquire class."""
+class DictFetchProgress(apt.progress.base.AcquireProgress):
+    """Monitor object for downloads"""
 
     def __init__(self):
         pass
 
     def start(self):
-        pass
+        """Invoked when the Acquire process starts running."""
+        print 'start AcquireProgress'
 
     def stop(self):
-        pass
+        """Invoked when the Acquire process stops running."""
+        print 'stop AcquireProgress'
 
     def fail(self, item):
+        """Invoked when an item could not be fetched."""
         print 'fail', item
 
     def fetch(self, item):
+        """Invoked when some of the item's data is fetched."""
         print 'fetch', item
 
     def ims_hit(self, item):
+        """Invoked when an item is confirmed to be up-to-date.
+
+        Invoked when an item is confirmed to be up-to-date. For instance,
+        when an HTTP download is informed that the file on the server was
+        not modified.
+        """
         print 'ims_hit', item
 
     def pulse(self, owner):
-        print "pulse: CPS: %s/s; Bytes: %s/%s; Item: %s/%s" % (
-            apt_pkg.size_to_str(self.current_cps),
-            apt_pkg.size_to_str(self.current_bytes),
-            apt_pkg.size_to_str(self.total_bytes),
-            self.current_items,
-            self.total_items)
+        """Periodically invoked while the Acquire process is underway.
+
+        This method gets invoked while the Acquire progress given by the
+        parameter 'owner' is underway. It should display information about
+        the current state.
+
+        This function returns a boolean value indicating whether the
+        acquisition should be continued (True) or cancelled (False).
+        """
+        print { 
+            'current_bytes': self.current_bytes,
+            'current_cps': self.current_cps,
+            'current_items': self.current_items,
+            'elapsed_time': self.elapsed_time,
+            'fetched_bytes': self.fetched_bytes,
+            'last_bytes': self.last_bytes,
+            'total_bytes': self.total_bytes,
+            'total_items': self.total_items
+        }
         return True
 
-    def media_change(self, medium, drive):
-        print "Please insert medium %s in drive %s" % (medium, drive)
-        sys.stdin.readline()
 
-
-class TextInstallProgress(apt.progress.base.InstallProgress):
+class DictInstallProgress(apt.progress.base.InstallProgress):
     """Class to report the progress of installing packages."""
 
     def __init__(self):
@@ -65,14 +84,20 @@ class TextInstallProgress(apt.progress.base.InstallProgress):
         pass
 
     def start_update(self):
-        pass
+        """Start update."""
+        print 'start InstallProgress'
 
     def finish_update(self):
-        pass
+        """Called when update has finished."""
+        print 'finish InstallProgress'
 
     def status_change(self, pkg, percent, status):
-        # print "[%s] %s: %s" % (percent, pkg.strip(), status.strip())
-        print percent
+        """Called when the APT status changed."""
+        print {
+            'pkg': pkg.strip(),
+            'percent': percent,
+            'status': status.strip()
+        }
 
     def update_interface(self):
         apt.progress.base.InstallProgress.update_interface(self)
@@ -224,7 +249,7 @@ class AppCenter(object):
                 self.presentation_controller.stop()
             
             # install
-            result = self.apt_cache.commit(TextFetchProgress(), TextInstallProgress()) # True if all was fine
+            result = self.apt_cache.commit(DictFetchProgress(), DictInstallProgress()) # True if all was fine
             self.apt_cache.update()
             self.apt_cache.open()
 
@@ -269,7 +294,7 @@ class AppCenter(object):
             raise InvalidUsage(package + " is not installed", status_code=400);
 
         try:
-            result = self.apt_cache.commit(TextFetchProgress(), TextInstallProgress()) # True if all was fine
+            result = self.apt_cache.commit(DictFetchProgress(), DictInstallProgress()) # True if all was fine
             self.apt_cache.update()
             self.apt_cache.open()
         except Exception, arg:

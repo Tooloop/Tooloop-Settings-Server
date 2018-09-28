@@ -8,7 +8,7 @@
     :license: Unlicense, see LICENSE for more details.
 """
 
-from flask import Flask, jsonify, render_template, request, after_this_request, abort, send_from_directory, make_response
+from flask import Flask, jsonify, render_template, request, after_this_request, abort, send_from_directory, make_response, Response
 from jinja2 import ChoiceLoader, FileSystemLoader
 
 from controllers.system_controller import System
@@ -21,6 +21,7 @@ from utils.exceptions import *
 
 # import augeas
 import time
+import json
 
 from pprint import pprint
 from subprocess import call
@@ -356,6 +357,43 @@ def uninstall_package(name):
         return make_response(jsonify({'message':e.message}), e.status_code)
     except Exception as e:
         abort(500, e)
+
+@app.route('/tooloop/api/v1.0/appcenter/progress')
+def appcenter_progress():
+    # return json.jsonify(appcenter.get_progress())
+
+    def progress():
+        lines = [
+            'Reading package lists… Done',
+            'Building dependency tree       ',
+            'Reading state information… Done',
+            'The following NEW packages will be installed:',
+            '  tooloop-video-player',
+            '0 upgraded, 1 newly installed, 0 to remove and 68 not upgraded.',
+            'Need to get 0 B/5,911 kB of archives.',
+            'After this operation, 0 B of additional disk space will be used.',
+            'WARNING: The following packages cannot be authenticated!',
+            '  tooloop-video-player',
+            'Authentication warning overridden.',
+            'Get:1 file:/assets/packages ./ tooloop-video-player 0.1.0 [5,911 kB]',
+            'Selecting previously unselected package tooloop-video-player.',
+            '(Reading database ... 168126 files and directories currently installed.)',
+            'Preparing to unpack .../tooloop-video-player_0.1.0_all.deb ...',
+            'Unpacking tooloop-video-player (0.1.0) ...',
+            'Setting up tooloop-video-player (0.1.0) ...'
+        ]
+        percent = 0.0
+        task = 'installing'
+        
+        for index, line in enumerate(lines):
+            percent = min(100, percent + 100.0/len(lines))
+            if index == len(lines)-1:
+                task = 'finished'
+            progress = {'percent':percent, 'status':line, 'task': task}
+            yield 'data: '+json.dumps(progress)+'\n\n'
+            time.sleep(0.3)
+
+    return Response(progress(), mimetype= 'text/event-stream')
 
 
 

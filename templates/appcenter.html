@@ -15,7 +15,7 @@
         </p>
         <span>{{installed_presentation.candidate.summary}}</span>
         <p>
-            <button onclick="uninstall('{{installed_presentation.shortname}}')">Remove</button>
+            <button onclick="uninstall('{{installed_presentation.shortname}}', '{{installed_presentation.candidate.record['Name']}}')">Remove</button>
             {% if installed_presentation.has_settings %}
             <button onclick="document.location='/appsettings';">Settings</button>
             {% endif %}
@@ -36,9 +36,9 @@
                 <span class="developer">By <a href="{{package.candidate.homepage}}">{{package.candidate.record["Maintainer"]}}</a></span>
                 <div class="description">{{package.candidate.summary}}</div>
                 {% if package.is_installed %}
-                    <button onclick="uninstall('{{package.shortname}}')">Remove</button>
+                    <button onclick="uninstall('{{package.shortname}}', '{{package.candidate.record['Name']}}')">Remove</button>
                 {% else %}
-                    <button onclick="install('{{package.shortname}}')">Install</button>
+                    <button onclick="install('{{package.shortname}}', '{{package.candidate.record['Name']}}')">Install</button>
                 {% endif %}
             </div>
         </div>
@@ -55,9 +55,9 @@
                 <span class="developer">By <a href="{{package.candidate.homepage}}">{{package.developer}}</a></span>
                 <div class="description">{{package.candidate.summary}}</div>
                 {% if package.is_installed %}
-                    <button onclick="uninstall('{{package.shortname}}')">Remove</button>
+                    <button onclick="uninstall('{{package.shortname}}', '{{package.candidate.record['Name']}}')">Remove</button>
                 {% else %}
-                    <button onclick="install('{{package.shortname}}')">Install</button>
+                    <button onclick="install('{{package.shortname}}', '{{package.candidate.record['Name']}}')">Install</button>
                 {% endif %}
             </div>
         </div>
@@ -67,6 +67,21 @@
 </div>
 {% endblock %}
 
+{% block end_of_page %}
+    <div id="package-progress" style="height: 100%; width: 100%; position: fixed; z-index: 100; display: none;">
+        <div style="background-color: white; margin: 15% auto; padding: 20px; max-width: 640px; width: 100%; overflow: auto;">
+            <h1>Installing Processing Example</h1>
+            
+
+            <ul class="terminal" style="background: #ccc; font-family: monospace; font-weight: lighter; font-size: 12px; height: 100px; overflow: auto; white-space: nowrap; list-style: none; padding: 1rem; line-height: 1.3;">
+            </ul>
+
+            <progress value="43" max="100" style="-webkit-appearance: none; appearance: none; width: 100%; height: 1rem; border-radius: 3px; margin: 1rem 0;"></progress>
+
+            <button disabled style="float: right" onclick="location.reload();">OK</button>
+        </div>
+    </div>
+{% endblock %}
 
 {% block page_footer_scripts %}
 <script type="text/javascript">
@@ -74,28 +89,53 @@
     $(document).ready(function() {
     });
 
-    {#
-    if(!confirm("Do you want to install "+name+"? {{installed_presentation.shortname}} will be uninstalled!") ) {
-        return;
+    var showProgress = function(title) {
+        TooloopUI.showCover();
+        $('#package-progress h1').html(title);
+        $('#package-progress .terminal').empty();
+        $('#package-progress button').attr('disabled', true);
+        $('#package-progress').fadeIn(100);
     }
-    #}
 
-    var install = function(name) {
+    var updateProgress = function(event, source) {
+        progress = JSON.parse(event.data);
+        $('#package-progress .terminal').append('<li>'+progress.status+'</li>');
+        $('#package-progress .terminal').scrollTop(99999999999);
+        $('#package-progress progress').val(progress.percent)
+        if (progress.task.toLowerCase() != 'installing') {
+            $('#package-progress button').removeAttr('disabled');
+            source.close();
+        }
+    };
+
+    var install = function(package, name) {
+        // show modal
+        showProgress("Installing " + name)
+        // listen to progress updates
+        var source = new EventSource("/tooloop/api/v1.0/appcenter/progress");
+        source.onmessage = function(event) { updateProgress(event, source) };
+        // install
         $.ajax({
-            url: "/tooloop/api/v1.0/appcenter/install/"+name
+            url: "/tooloop/api/v1.0/appcenter/install/"+package
         }).done(function( data ) {
-           location.reload();
+           // location.reload();
         });
-    }
+    };
 
 
-    var uninstall = function(name) {
+    var uninstall = function(package, name) {
+        // show modal
+        showProgress("Removing " + name)
+        // listen to progress updates
+        var source = new EventSource("/tooloop/api/v1.0/appcenter/progress");
+        source.onmessage = function(event) { updateProgress(event, source) };
+        // uninstall
         $.ajax({
-            url: "/tooloop/api/v1.0/appcenter/uninstall/"+name
+            url: "/tooloop/api/v1.0/appcenter/uninstall/"+package
         }).done(function( data ) {
-           location.reload();
+           // location.reload();
         });
-    }
+    };
 
 </script>
 {% endblock %}
