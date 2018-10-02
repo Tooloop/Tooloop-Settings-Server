@@ -2,67 +2,106 @@
 
 {% block content %}
 
-{% if installed_presentation %}
-<div id="active-app-area" class="area">
-    
-    <img src="https://via.placeholder.com/960x540" />
-    <div id="active-app-description">
-        <span class="current-app">Currently installed</span>
-        <h1>{{installed_presentation.shortname}}</h1>
-        <p>
-            Version {{installed_presentation.candidate.version}}<br/>
-            By <a href="{{installed_presentation.candidate.homepage}}">{{installed_presentation.candidate.record["Maintainer"]}}</a>
-        </p>
-        <span>{{installed_presentation.candidate.summary}}</span>
-        <p>
-            <button onclick="uninstall('{{installed_presentation.shortname}}', '{{installed_presentation.candidate.record['Name']}}')">Remove</button>
-            {% if installed_presentation.has_settings %}
-            <button onclick="document.location='/appsettings';">Settings</button>
+<div class="radio-tabs" role="tablist">
+    <input class="state" type="radio" title="Installed" name="tab-state" id="installed" role="tab" checked />
+    <input class="state" type="radio" title="Presentations" name="tab-state" id="presentations" role="tab" />
+    <input class="state" type="radio" title="Addons" name="tab-state" id="addons" role="tab" />
+
+    <div class="tabs area">
+        <label for="installed" id="installed-tab" class="tab">Installed</label>
+        <label for="presentations" id="presentations-tab" class="tab">Presentations</label>
+        <label for="addons" id="addons-tab" class="tab">Addons</label>
+    </div>
+    {# <button>Install from file</button> #}
+
+    <div id="appcenter-area" class="panels">
+
+        <div id="installed-panel" class="panel active" role="tabpanel">
+            {% if installed_presentation %}
+            <div id="active-app-area" class="area">
+                
+                <img src="{{installed_presentation.preview_image}}" />
+                <div id="active-app-description">
+                    <span class="current-app">Current presentation</span>
+                    <h1>{{installed_presentation.shortname}}</h1>
+                    <p>
+                        Version {{installed_presentation.candidate.version}}<br/>
+                        By <a href="{{installed_presentation.candidate.homepage}}">{{installed_presentation.maintainer}}</a>
+                    </p>
+                    <span>{{installed_presentation.candidate.summary}}</span>
+                    <p>
+                        <button onclick="uninstall('{{installed_presentation.shortname}}', '{{installed_presentation.name}}')">Remove</button>
+                        {% if installed_presentation.has_settings %}
+                        <button onclick="document.location='/appsettings';">Settings</button>
+                        {% endif %}
+                    </p>
+              </div>
+            </div>
             {% endif %}
-        </p>
-  </div>
-</div>
-{% endif %}
 
-<div id="appcenter-area" class="area">
-
-    <h2>Presentations</h2>
-    {% for package in available_packages.presentations if not package.shortname == installed_presentation.shortname %}
-    <div class="app">
-        <img class="preview-image" src="https://via.placeholder.com/960x540" />
-        <div class="info-area">
-            <div class="info">
-                <strong class="name"{% if package.is_installed %} style="color: red"{% endif %}>{{package.candidate.record["Name"]}}</strong>
-                <span class="developer">By <a href="{{package.candidate.homepage}}">{{package.candidate.record["Maintainer"]}}</a></span>
-                <div class="description">{{package.candidate.summary}}</div>
-                {% if package.is_installed %}
-                    <button onclick="uninstall('{{package.shortname}}', '{{package.candidate.record['Name']}}')">Remove</button>
-                {% else %}
-                    <button onclick="install('{{package.shortname}}', '{{package.candidate.record['Name']}}')">Install</button>
-                {% endif %}
+            <div class="area">
+                {% for package in available_packages.addons if package.is_installed %}
+                <div class="app">
+                    <img class="preview-image" src="{{package.preview_image}}" />
+                    <div class="info-area">
+                        <div class="info">
+                            <strong class="name">{{package.name}}</strong>
+                            <span class="developer">By <a href="{{package.candidate.homepage}}">{{package.maintainer}}</a></span>
+                            <div class="description">{{package.candidate.summary}}</div>
+                            {% if package.is_installed %}
+                                <button onclick="uninstall('{{package.shortname}}', '{{package.name}}')">Remove</button>
+                            {% else %}
+                                <button onclick="install('{{package.shortname}}', '{{package.name}}')">Install</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
-        </div>
-    </div>
-    {% endfor %}
 
-    <h2 style="clear:both">Addons</h2>
-    {% for package in available_packages.addons if not package.shortname == installed_presentation.name %}
-    <div class="app">
-        <img class="preview-image" src="https://via.placeholder.com/960x540" />
-        <div class="info-area">
-            <div class="info">
-                <strong class="name"{% if package.is_installed %} style="color: red"{% endif %}>{{package.candidate.record["Name"]}}</strong>
-                <span class="developer">By <a href="{{package.candidate.homepage}}">{{package.developer}}</a></span>
-                <div class="description">{{package.candidate.summary}}</div>
-                {% if package.is_installed %}
-                    <button onclick="uninstall('{{package.shortname}}', '{{package.candidate.record['Name']}}')">Remove</button>
-                {% else %}
-                    <button onclick="install('{{package.shortname}}', '{{package.candidate.record['Name']}}')">Install</button>
-                {% endif %}
-            </div>
         </div>
+
+        <div id="presentations-panel" class="panel area" role="tabpanel">
+            {% for package in available_packages.presentations if not package.shortname == installed_presentation.shortname %}
+            <div class="app{% if package.is_installed %} installed{% endif %}">
+                <img class="preview-image" src="{{package.preview_image}}" />
+                <div class="info-area">
+                    <div class="info">
+                        <strong class="name">{{package.name}}</strong>
+                        <span class="developer">By <a href="{{package.candidate.homepage}}">{{package.maintainer}}</a></span>
+                        <div class="description">{{package.candidate.summary}}</div>
+                        {% if package.is_installed %}
+                            <button onclick="uninstall('{{package.shortname}}', '{{package.name}}')">Remove</button>
+                        {% else %}
+                            <button onclick="install('{{package.shortname}}', '{{package.name}}')">Install</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div id="addons-panel" class="panel area" role="tabpanel">
+            {% for package in available_packages.addons if not package.shortname == installed_presentation.name %}
+            <div class="app{% if package.is_installed %} installed{% endif %}">
+                <img class="preview-image" src="{{package.preview_image}}" />
+                <div class="info-area">
+                    <div class="info">
+                        <strong class="name">{{package.name}}</strong>
+                        <span class="developer">By <a href="{{package.candidate.homepage}}">{{package.maintainer}}</a></span>
+                        <div class="description">{{package.candidate.summary}}</div>
+                        {% if package.is_installed %}
+                            <button onclick="uninstall('{{package.shortname}}', '{{package.name}}')">Remove</button>
+                        {% else %}
+                            <button onclick="install('{{package.shortname}}', '{{package.name}}')">Install</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
     </div>
-    {% endfor %}
 
 </div>
 {% endblock %}

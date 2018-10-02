@@ -1,0 +1,56 @@
+/* Android 2.3 :checked fix */
+@keyframes fake {
+    from {
+        opacity: 1;
+    }
+    to {
+        opactity: 1
+    }
+}
+body {        
+    animation: fake 1s infinite;
+}
+
+.radio-tabs .state {
+    position: absolute;
+    left: -10000px;
+}
+
+.radio-tabs .tabs {
+    background: white;
+    padding-bottom: 0;
+    padding-top: calc(2em - 3px);
+}
+
+.radio-tabs .tab {
+    display: inline-block;
+    padding: .5em 0;
+    margin: 0 1em;
+    vertical-align: top;
+    cursor: hand;
+    cursor: pointer;
+}
+
+.radio-tabs .tab:hover {
+    border-bottom: 3px solid $gray5;
+}
+
+#installed:checked ~ .tabs #installed-tab,
+#presentations:checked ~ .tabs #presentations-tab,
+#addons:checked ~ .tabs #addons-tab {
+    border-bottom: 3px solid $pink;
+    cursor: default;
+}
+
+.radio-tabs .panels {
+}
+
+.radio-tabs .panel {
+    display: none;
+}
+
+#installed:checked ~ .panels #installed-panel,
+#presentations:checked ~ .panels #presentations-panel,
+#addons:checked ~ .panels #addons-panel {
+    display: block;
+}
