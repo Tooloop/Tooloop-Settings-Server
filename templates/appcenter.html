@@ -2,20 +2,21 @@
 
 {% block content %}
 
-<div class="radio-tabs" role="tablist">
-    <input class="state" type="radio" title="Installed" name="tab-state" id="installed" role="tab" checked />
-    <input class="state" type="radio" title="Presentations" name="tab-state" id="presentations" role="tab" />
-    <input class="state" type="radio" title="Addons" name="tab-state" id="addons" role="tab" />
+<div id="appcenter-area">
+    <div class="tabs" role="tablist">
+        <input type="radio" title="Installed" name="tab-state" id="installed" role="tab" checked />
+        <input type="radio" title="Presentations" name="tab-state" id="presentations" role="tab" />
+        <input type="radio" title="Addons" name="tab-state" id="addons" role="tab" />
 
-    <div class="tabs area">
         <label for="installed" id="installed-tab" class="tab">Installed</label>
         <label for="presentations" id="presentations-tab" class="tab">Presentations</label>
         <label for="addons" id="addons-tab" class="tab">Addons</label>
-    </div>
-    {# <button>Install from file</button> #}
+        <button style="float: right; margin: 2rem 3rem 0 0" disabled="disabled">Install from file</button>
 
-    <div id="appcenter-area" class="panels">
 
+        {# ------------------------------------------------------------------ #}
+        {# Installed #}
+        {# ------------------------------------------------------------------ #}
         <div id="installed-panel" class="panel active" role="tabpanel">
             {% if installed_presentation %}
             <div id="active-app-area" class="area">
@@ -23,7 +24,7 @@
                 <img src="{{installed_presentation.preview_image}}" />
                 <div id="active-app-description">
                     <span class="current-app">Current presentation</span>
-                    <h1>{{installed_presentation.shortname}}</h1>
+                    <h1>{{installed_presentation.prettyname}}</h1>
                     <p>
                         Version {{installed_presentation.candidate.version}}<br/>
                         By <a href="{{installed_presentation.candidate.homepage}}">{{installed_presentation.maintainer}}</a>
@@ -40,12 +41,13 @@
             {% endif %}
 
             <div class="area">
+                <h2>Addons</h2>
                 {% for package in available_packages.addons if package.is_installed %}
                 <div class="app">
                     <img class="preview-image" src="{{package.preview_image}}" />
                     <div class="info-area">
                         <div class="info">
-                            <strong class="name">{{package.name}}</strong>
+                            <strong class="name">{{package.prettyname}}</strong>
                             <span class="developer">By <a href="{{package.candidate.homepage}}">{{package.maintainer}}</a></span>
                             <div class="description">{{package.candidate.summary}}</div>
                             {% if package.is_installed %}
@@ -61,39 +63,45 @@
 
         </div>
 
+        {# ------------------------------------------------------------------ #}
+        {# Presentations #}
+        {# ------------------------------------------------------------------ #}
         <div id="presentations-panel" class="panel area" role="tabpanel">
-            {% for package in available_packages.presentations if not package.shortname == installed_presentation.shortname %}
+            {% for package in available_packages.presentations %}
             <div class="app{% if package.is_installed %} installed{% endif %}">
                 <img class="preview-image" src="{{package.preview_image}}" />
                 <div class="info-area">
                     <div class="info">
-                        <strong class="name">{{package.name}}</strong>
+                        <strong class="name">{{package.prettyname}}</strong>
                         <span class="developer">By <a href="{{package.candidate.homepage}}">{{package.maintainer}}</a></span>
                         <div class="description">{{package.candidate.summary}}</div>
                         {% if package.is_installed %}
-                            <button onclick="uninstall('{{package.shortname}}', '{{package.name}}')">Remove</button>
+                            <button onclick="uninstall('{{package.shortname}}', '{{package.prettyname}}')">Remove</button>
                         {% else %}
-                            <button onclick="install('{{package.shortname}}', '{{package.name}}')">Install</button>
+                            <button onclick="install('{{package.shortname}}', '{{package.prettyname}}')">Install</button>
                         {% endif %}
                     </div>
                 </div>
             </div>
             {% endfor %}
         </div>
-        
+
+        {# ------------------------------------------------------------------ #}
+        {# Addons #}
+        {# ------------------------------------------------------------------ #}
         <div id="addons-panel" class="panel area" role="tabpanel">
-            {% for package in available_packages.addons if not package.shortname == installed_presentation.name %}
+            {% for package in available_packages.addons %}
             <div class="app{% if package.is_installed %} installed{% endif %}">
                 <img class="preview-image" src="{{package.preview_image}}" />
                 <div class="info-area">
                     <div class="info">
-                        <strong class="name">{{package.name}}</strong>
+                        <strong class="name">{{package.prettyname}}</strong>
                         <span class="developer">By <a href="{{package.candidate.homepage}}">{{package.maintainer}}</a></span>
                         <div class="description">{{package.candidate.summary}}</div>
                         {% if package.is_installed %}
-                            <button onclick="uninstall('{{package.shortname}}', '{{package.name}}')">Remove</button>
+                            <button onclick="uninstall('{{package.shortname}}', '{{package.prettyname}}')">Remove</button>
                         {% else %}
-                            <button onclick="install('{{package.shortname}}', '{{package.name}}')">Install</button>
+                            <button onclick="install('{{package.shortname}}', '{{package.prettyname}}')">Install</button>
                         {% endif %}
                     </div>
                 </div>
@@ -138,18 +146,18 @@
 
     var updateProgress = function(event, source) {
         progress = JSON.parse(event.data);
-        $('#package-progress .terminal').append('<li>'+progress.status+'</li>');
+        $('#package-progress .terminal').append('<li>'+progress.task+'</li>');
         $('#package-progress .terminal').scrollTop(99999999999);
         $('#package-progress progress').val(progress.percent)
-        if (progress.task.toLowerCase() != 'installing') {
+        if (progress.status.toLowerCase() != 'ok') {
             $('#package-progress button').removeAttr('disabled');
             source.close();
         }
     };
 
-    var install = function(package, name) {
+    var install = function(package, prettyname) {
         // show modal
-        showProgress("Installing " + name)
+        showProgress("Installing " + prettyname)
         // listen to progress updates
         var source = new EventSource("/tooloop/api/v1.0/appcenter/progress");
         source.onmessage = function(event) { updateProgress(event, source) };
@@ -162,9 +170,9 @@
     };
 
 
-    var uninstall = function(package, name) {
+    var uninstall = function(package, prettyname) {
         // show modal
-        showProgress("Removing " + name)
+        showProgress("Removing " + prettyname)
         // listen to progress updates
         var source = new EventSource("/tooloop/api/v1.0/appcenter/progress");
         source.onmessage = function(event) { updateProgress(event, source) };

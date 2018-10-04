@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from flask import Flask, render_template, abort
+from flask import Flask, render_template, abort, jsonify
+from flask.json import JSONEncoder
 
 from os import listdir, rename, mkdir, chown, utime
 from os.path import isdir, isfile, join
@@ -14,6 +15,7 @@ import apt_pkg
 import sys
 import time
 import apt.progress.base
+from apt import Package
 
 # from utils.file_utils import *
 from utils.exceptions import *
@@ -22,27 +24,32 @@ from pprint import pprint
 
 
 
+# ------------------------------------------------------------------------------
+# DictFetchProgress
+# ------------------------------------------------------------------------------
 class DictFetchProgress(apt.progress.base.AcquireProgress):
     """Monitor object for downloads"""
 
-    def __init__(self):
-        pass
+    def __init__(self, progress_dict):
+        self.progress_dict = progress_dict
 
     def start(self):
         """Invoked when the Acquire process starts running."""
-        print 'start AcquireProgress'
+        self.progress_dict['step'] = 'Downloading packages'
+        self.progress_dict['task'] = 'start downloading'
 
     def stop(self):
         """Invoked when the Acquire process stops running."""
-        print 'stop AcquireProgress'
+        self.progress_dict['task'] = 'finished downloading'
 
     def fail(self, item):
         """Invoked when an item could not be fetched."""
-        print 'fail', item
+        self.progress_dict['task'] = item+' could not be downloaded'
+        self.progress_dict['status'] = 'fail'
 
     def fetch(self, item):
         """Invoked when some of the item's data is fetched."""
-        print 'fetch', item
+        self.progress_dict['task'] = item+' downloaded'
 
     def ims_hit(self, item):
         """Invoked when an item is confirmed to be up-to-date.
@@ -51,7 +58,7 @@ class DictFetchProgress(apt.progress.base.AcquireProgress):
         when an HTTP download is informed that the file on the server was
         not modified.
         """
-        print 'ims_hit', item
+        self.progress_dict['task'] = item+' is already the latest version'
 
     def pulse(self, owner):
         """Periodically invoked while the Acquire process is underway.
@@ -63,41 +70,47 @@ class DictFetchProgress(apt.progress.base.AcquireProgress):
         This function returns a boolean value indicating whether the
         acquisition should be continued (True) or cancelled (False).
         """
-        print { 
-            'current_bytes': self.current_bytes,
-            'current_cps': self.current_cps,
-            'current_items': self.current_items,
-            'elapsed_time': self.elapsed_time,
-            'fetched_bytes': self.fetched_bytes,
-            'last_bytes': self.last_bytes,
-            'total_bytes': self.total_bytes,
-            'total_items': self.total_items
-        }
-        return True
+        # self.current_bytes
+        # self.current_cps
+        # self.current_items
+        # self.elapsed_time
+        # self.fetched_bytes
+        # self.last_bytes
+        # self.total_bytes
+        # self.total_items
+        self.progress_dict['percent'] = self.current_bytes/self.total_bytes
+
+        return self.progress_dict['status'] == 'ok'
 
 
+
+# ------------------------------------------------------------------------------
+# DictInstallProgress
+# ------------------------------------------------------------------------------
 class DictInstallProgress(apt.progress.base.InstallProgress):
     """Class to report the progress of installing packages."""
 
-    def __init__(self):
+    def __init__(self, progress_dict):
         apt.progress.base.InstallProgress.__init__(self)
-        pass
+        self.progress_dict = progress_dict
 
     def start_update(self):
         """Start update."""
-        print 'start InstallProgress'
+        self.progress_dict['percent'] = 0
+        self.progress_dict['step'] = 'Installing'
+        self.progress_dict['task'] = 'start installation'
+        self.progress_dict['status'] = 'ok'
 
     def finish_update(self):
         """Called when update has finished."""
-        print 'finish InstallProgress'
+        self.progress_dict['task'] = 'done'
+        self.progress_dict['status'] = 'done'
+        self.progress_dict['percent'] = 100
 
     def status_change(self, pkg, percent, status):
         """Called when the APT status changed."""
-        print {
-            'pkg': pkg.strip(),
-            'percent': percent,
-            'status': status.strip()
-        }
+        self.progress_dict['percent'] = percent
+        self.progress_dict['task'] = status
 
     def update_interface(self):
         apt.progress.base.InstallProgress.update_interface(self)
@@ -106,16 +119,63 @@ class DictInstallProgress(apt.progress.base.InstallProgress):
 
 
 
+# ------------------------------------------------------------------------------
+# PackageJSONEncoder
+# ------------------------------------------------------------------------------
+class PackageJSONEncoder(JSONEncoder):
+
+    def default(self, obj):
+        try:
+            if isinstance(obj, Package):
+                return {
+                    'package_name': obj.shortname,
+                    'version': obj.candidate.version,
+                    'homepage': obj.candidate.homepage,
+                    'maintainer': obj.maintainer,
+                    'bugs': obj.bugs,
+                    'name': obj.name,
+                    'summary': obj.candidate.summary,
+                    'description': obj.candidate.description,
+                    'section': obj.section,
+                    'architecture': obj.architecture(),
+                    'preview_image': obj.preview_image,
+                    'media': obj.media,
+                    # TODO:
+                    # 'pre_depends': pre_depends,
+                    # 'depends': depends,
+                    # 'recommends': recommends,
+                    # 'suggests': suggests,
+                    # 'has_controller': has_controller,
+                    # 'has_settings': has_settings
+                }
+            iterable = iter(obj)
+        except TypeError:
+            pass
+        else:
+            return list(iterable)
+        return JSONEncoder.default(self, obj)
+
+
+
+# ------------------------------------------------------------------------------
+# AppCenter
+# ------------------------------------------------------------------------------
 class AppCenter(object):
-    """Holds information of available apps."""
+    """Holds information of available packages and manages their installation."""
     def __init__(self, presentation_controller, flask):
         super(AppCenter, self).__init__()
         self.presentation_controller = presentation_controller
-        # self.root_path = flask.root_path
+        self.root_path = flask.root_path
 
         self.apt_cache = apt.Cache()
         self.packages = None
         self.get_available_packages()
+        self.progress = {
+            'percent':0,
+            'step': '',
+            'task': '',
+            'status':'ok'
+            }
 
         # get information of installed packages
         self.installed_presentation = None
@@ -144,43 +204,6 @@ class AppCenter(object):
         #         return render_template('settings.html', page='appsettings', installed_app = self.installed_presentation, app_controller = self.installed_presentation_settings_controller)
         #     else:
         #         abort(404)
-    
-    def package_to_dict(self, package):
-        maintainer = bugs = name = None
-        try:
-            maintainer = package.candidate.record["Maintainer"]
-        except KeyError as e:
-            pass
-
-        try:
-            bugs = package.candidate.record["Bugs"] 
-        except KeyError as e:
-            pass
-
-        try:
-            name = package.candidate.record["Name"]
-        except KeyError as e:
-            pass
-
-        return {
-            'package_name': package.shortname,
-            'version': package.candidate.version,
-            'homepage': package.candidate.homepage,
-            'maintainer': maintainer,
-            'bugs': bugs,
-            'name': name,
-            'summary': package.candidate.summary,
-            'description': package.candidate.description,
-            'section': package.section,
-            'architecture': package.architecture(),
-            # TODO:
-            # 'pre_depends': pre_depends,
-            # 'depends': depends,
-            # 'recommends': recommends,
-            # 'suggests': suggests,
-            # 'has_controller': has_controller,
-            # 'has_settings': has_settings
-        }
 
 
     def get_installed_presentation(self):
@@ -207,12 +230,43 @@ class AppCenter(object):
 
             for package in packages:
                 pkg = self.apt_cache[package]
+                self.add_tooloop_metainfo(pkg)
+
                 if "tooloop/presentation" in pkg.section:
                     self.packages['presentations'].append(pkg)
                 elif "tooloop/addon" in pkg.section:
                     self.packages['addons'].append(pkg)
 
         return self.packages
+
+
+    def add_tooloop_metainfo(self, package):
+        try:
+            package.maintainer = package.candidate.record["Maintainer"]
+        except Exception as e:
+            pass
+
+        package.bugs = None
+        try:
+            package.bugs = package.candidate.record["Bugs"] 
+        except Exception as e:
+            pass
+
+        package.prettyname = None
+        try:
+            package.prettyname = package.candidate.record["Name"]
+        except Exception as e:
+            pass
+
+        package.preview_image = None
+        url_path = '/appcenter/'+package.shortname+'/preview_image'
+        file_path = '/assets/packages/media/'+package.shortname+'/preview_image'
+        if isfile(file_path+'.png'):
+            package.preview_image = url_path+'.png'
+        elif isfile(file_path+'.jpg'):
+            package.preview_image = url_path+'.jpg'
+
+        package.media = []
 
 
     def update_packages(self):
@@ -225,6 +279,7 @@ class AppCenter(object):
 
     def install(self, package):
         pkg = self.apt_cache[package]
+        self.add_tooloop_metainfo(pkg)
 
         # only handle tooloop packages
         if not "tooloop" in pkg.section:
@@ -249,7 +304,13 @@ class AppCenter(object):
                 self.presentation_controller.stop()
             
             # install
-            result = self.apt_cache.commit(DictFetchProgress(), DictInstallProgress()) # True if all was fine
+            # self.progress = {
+            #     'percent':0,
+            #     'step': '',
+            #     'task': '',
+            #     'status':'ok'
+            #     }
+            result = self.apt_cache.commit(DictFetchProgress(self.progress), DictInstallProgress(self.progress)) # True if all was fine
             self.apt_cache.update()
             self.apt_cache.open()
 
@@ -269,6 +330,7 @@ class AppCenter(object):
 
     def uninstall(self, package):
         pkg = self.apt_cache[package]
+        self.add_tooloop_metainfo(pkg)
 
         # if current presentation depends on package (e. g. an addon)
         if self.installed_presentation:
@@ -294,15 +356,21 @@ class AppCenter(object):
             raise InvalidUsage(package + " is not installed", status_code=400);
 
         try:
-            result = self.apt_cache.commit(DictFetchProgress(), DictInstallProgress()) # True if all was fine
+            # self.progress = {
+            #     'percent':0,
+            #     'step': '',
+            #     'task': '',
+            #     'status':'ok'
+            #     }
+            result = self.apt_cache.commit(DictFetchProgress(self.progress), DictInstallProgress(self.progress)) # True if all was fine
             self.apt_cache.update()
             self.apt_cache.open()
         except Exception, arg:
             raise Exception("Sorry, purging package failed [{err}]".format(err=str(arg)))
 
 
-
-
+    def get_progress(self):
+        return self.progress
 
 
 

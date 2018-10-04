@@ -11,46 +11,46 @@ body {
     animation: fake 1s infinite;
 }
 
-.radio-tabs .state {
+.tabs {
+    background: white;
+    height: 4.36rem;
+    overflow: visible;
+}
+
+.tabs input[type='radio'] {
     position: absolute;
     left: -10000px;
 }
 
-.radio-tabs .tabs {
+.tabs label {
     background: white;
     padding-bottom: 0;
-    padding-top: calc(2em - 3px);
-}
-
-.radio-tabs .tab {
     display: inline-block;
-    padding: .5em 0;
-    margin: 0 1em;
+    padding: .5rem 0;
+    padding-top: calc(2.5rem - 3px);
+    margin: 0 1rem;
     vertical-align: top;
     cursor: hand;
     cursor: pointer;
 }
 
-.radio-tabs .tab:hover {
+.tabs label:nth-of-type(1) {
+    margin-left: 3rem;
+}
+
+.tabs label:hover {
     border-bottom: 3px solid $gray5;
 }
 
-#installed:checked ~ .tabs #installed-tab,
-#presentations:checked ~ .tabs #presentations-tab,
-#addons:checked ~ .tabs #addons-tab {
-    border-bottom: 3px solid $pink;
-    cursor: default;
-}
-
-.radio-tabs .panels {
-}
-
-.radio-tabs .panel {
+.tabs .panel {
     display: none;
 }
 
-#installed:checked ~ .panels #installed-panel,
-#presentations:checked ~ .panels #presentations-panel,
-#addons:checked ~ .panels #addons-panel {
-    display: block;
+@for $i from 1 through 10 {
+    .tabs input:nth-child(#{$i}):checked ~ label:nth-of-type(#{$i}) {
+        border-bottom: 3px solid $pink
+    }
+    .tabs input:nth-child(#{$i}):checked ~ .panel:nth-of-type(#{$i}) {
+        display: block;
+    }
 }

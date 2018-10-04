@@ -260,7 +260,7 @@ body.appsettings #sidebar a.appsettings {
 
 .area {
   margin: 0;
-  padding: 2em 1em 4em 1em;
+  padding: 2rem 2rem 4rem 2rem;
 }
 
 // -----------------------------------------------------------------------------
@@ -616,10 +616,15 @@ button {
   margin: 0 0.2em 0.4em 0;
 }
 
-button:active {
+button:active:enabled {
   box-shadow: none;
   top: 1px;
   color: $gray5;
+}
+
+button:disabled {
+    opacity: 0.5;
+    background: $gray4;
 }
 
 table button {
@@ -784,6 +789,18 @@ input.toggle-button:checked + label {
   margin-left: 1em;
   margin-right: 1em;
   position: relative;
+}
+
+#appcenter-area .app.installed::before {
+  content: "Installed";
+  background: $blue;
+  color: white;
+  position: absolute;
+  top: 0.5rem;
+  font-size: 0.75rem;
+  padding: 0 1rem;
+  font-weight: normal;
+  box-shadow: 1px 1px 0px rgba(0,0,0,0.2);
 }
 
 .app img {

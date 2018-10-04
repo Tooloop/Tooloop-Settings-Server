@@ -13,7 +13,7 @@ from jinja2 import ChoiceLoader, FileSystemLoader
 
 from controllers.system_controller import System
 from controllers.presentation_controller import Presentation
-from controllers.appcenter_controller import AppCenter
+from controllers.appcenter_controller import AppCenter, PackageJSONEncoder
 from controllers.services_controller import Services
 from controllers.screenshot_controller import Screenshots
 from utils.time_utils import *
@@ -120,8 +120,8 @@ def serve_installed_app(filename):
     return send_from_directory('installed_app/', filename)
 
 @app.route('/appcenter/<path:filename>')
-def serve_available_apps(filename):
-    return send_from_directory('/assets/apps/', filename)
+def serve_package_media(filename):
+    return send_from_directory('/assets/packages/media', filename)
 
 
 
@@ -313,21 +313,12 @@ def reset_presentation():
 
 @app.route('/tooloop/api/v1.0/appcenter/installed', methods=['GET'])
 def get_installed_app():
-    return jsonify(appcenter.package_to_dict(appcenter.get_installed_presentation()))
+    return jsonify(appcenter.get_installed_presentation())
 
 @app.route('/tooloop/api/v1.0/appcenter/available', methods=['GET'])
 def get_available_packages():
-    pkg_dict = {
-        'presentations': [],
-        'addons': []
-    }
     packages = appcenter.get_available_packages()
-    for presentation in packages['presentations']:
-        pkg_dict['presentations'].append(appcenter.package_to_dict(presentation))
-    for addon in packages['addons']:
-        pkg_dict['addons'].append(appcenter.package_to_dict(addon))
-    return jsonify(pkg_dict)
-
+    return jsonify(packages)
 
 @app.route('/tooloop/api/v1.0/appcenter/refresh', methods=['GET'])
 def update_packages():
@@ -360,38 +351,43 @@ def uninstall_package(name):
 
 @app.route('/tooloop/api/v1.0/appcenter/progress')
 def appcenter_progress():
-    # return json.jsonify(appcenter.get_progress())
-
     def progress():
-        lines = [
-            'Reading package lists… Done',
-            'Building dependency tree       ',
-            'Reading state information… Done',
-            'The following NEW packages will be installed:',
-            '  tooloop-video-player',
-            '0 upgraded, 1 newly installed, 0 to remove and 68 not upgraded.',
-            'Need to get 0 B/5,911 kB of archives.',
-            'After this operation, 0 B of additional disk space will be used.',
-            'WARNING: The following packages cannot be authenticated!',
-            '  tooloop-video-player',
-            'Authentication warning overridden.',
-            'Get:1 file:/assets/packages ./ tooloop-video-player 0.1.0 [5,911 kB]',
-            'Selecting previously unselected package tooloop-video-player.',
-            '(Reading database ... 168126 files and directories currently installed.)',
-            'Preparing to unpack .../tooloop-video-player_0.1.0_all.deb ...',
-            'Unpacking tooloop-video-player (0.1.0) ...',
-            'Setting up tooloop-video-player (0.1.0) ...'
-        ]
-        percent = 0.0
-        task = 'installing'
-        
-        for index, line in enumerate(lines):
-            percent = min(100, percent + 100.0/len(lines))
-            if index == len(lines)-1:
-                task = 'finished'
-            progress = {'percent':percent, 'status':line, 'task': task}
+        progress = appcenter.get_progress()
+        while True:
             yield 'data: '+json.dumps(progress)+'\n\n'
-            time.sleep(0.3)
+            if progress['status'] != 'ok':
+                break
+            time.sleep(0.1)
+
+        # lines = [
+        #     'Reading package lists… Done',
+        #     'Building dependency tree       ',
+        #     'Reading state information… Done',
+        #     'The following NEW packages will be installed:',
+        #     '  tooloop-video-player',
+        #     '0 upgraded, 1 newly installed, 0 to remove and 68 not upgraded.',
+        #     'Need to get 0 B/5,911 kB of archives.',
+        #     'After this operation, 0 B of additional disk space will be used.',
+        #     'WARNING: The following packages cannot be authenticated!',
+        #     '  tooloop-video-player',
+        #     'Authentication warning overridden.',
+        #     'Get:1 file:/assets/packages ./ tooloop-video-player 0.1.0 [5,911 kB]',
+        #     'Selecting previously unselected package tooloop-video-player.',
+        #     '(Reading database ... 168126 files and directories currently installed.)',
+        #     'Preparing to unpack .../tooloop-video-player_0.1.0_all.deb ...',
+        #     'Unpacking tooloop-video-player (0.1.0) ...',
+        #     'Setting up tooloop-video-player (0.1.0) ...'
+        # ]
+        # percent = 0.0
+        # task = 'installing'
+        
+        # for index, line in enumerate(lines):
+        #     percent = min(100, percent + 100.0/len(lines))
+        #     if index == len(lines)-1:
+        #         task = 'finished'
+        #     progress = {'percent':percent, 'status':line, 'task': task}
+        #     yield 'data: '+json.dumps(progress)+'\n\n'
+        #     time.sleep(0.1)
 
     return Response(progress(), mimetype= 'text/event-stream')
 
@@ -496,6 +492,7 @@ def grab_screenshot():
 # ------------------------------------------------------------------------------
 
 if __name__ == "__main__":
+    app.json_encoder = PackageJSONEncoder
     app.run(
         debug=True,
         host=app.config['HOST'],
