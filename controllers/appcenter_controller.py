@@ -133,7 +133,7 @@ class PackageJSONEncoder(JSONEncoder):
                     'homepage': obj.candidate.homepage,
                     'maintainer': obj.maintainer,
                     'bugs': obj.bugs,
-                    'name': obj.name,
+                    'name': obj.prettyname,
                     'summary': obj.candidate.summary,
                     'description': obj.candidate.description,
                     'section': obj.section,
@@ -310,6 +310,8 @@ class AppCenter(object):
             #     'task': '',
             #     'status':'ok'
             #     }
+            # print self.progress
+            
             result = self.apt_cache.commit(DictFetchProgress(self.progress), DictInstallProgress(self.progress)) # True if all was fine
             self.apt_cache.update()
             self.apt_cache.open()
@@ -362,6 +364,7 @@ class AppCenter(object):
             #     'task': '',
             #     'status':'ok'
             #     }
+            # print self.progress
             result = self.apt_cache.commit(DictFetchProgress(self.progress), DictInstallProgress(self.progress)) # True if all was fine
             self.apt_cache.update()
             self.apt_cache.open()

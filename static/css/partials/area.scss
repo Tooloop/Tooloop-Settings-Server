@@ -1,0 +1,30 @@
+
+.area {
+  margin: 0;
+  padding: 2rem;
+}
+
+@media (max-width: $max-mobile-width) {
+  .area {
+      padding: 1rem;
+  }
+}
+
+.area.blue {
+    background-color: lighten( desaturate( $blue, 60% ), 30%);
+}
+
+.area.gray {
+    background-color: $gray3;
+    color: white;
+}
+
+
+.area h1,
+.area h2,
+.area h3 {
+  margin: 0;
+}
+
+.area.blue h1 { color: $purple; }
+.area.gray h1 { color: $blue; }

@@ -81,7 +81,14 @@ def render_appcenter():
         page='appcenter', 
         installed_presentation = appcenter.get_installed_presentation(),
         available_packages = appcenter.get_available_packages(),
-        time_stamp = time.time(),
+    )
+
+@app.route("/appcenter/package/<string:package>")
+def render_package_detail(package):
+    return render_template('package-detail.html', 
+        page='appcenter',
+        package=package,
+        installed_presentation = appcenter.get_installed_presentation()
     )
 
 @app.route("/services")

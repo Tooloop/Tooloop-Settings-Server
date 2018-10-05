@@ -5,100 +5,113 @@
 {% endblock %}
 
 {% block content %}
-    <div id="system-area" class="area">
-
-        {% if screenshot_service_running %}
-            <div id="screenshot" class="{{display_state|lower}}">
-                <a onclick="showScreenshotPanel()">
-                    <img id="screenshot-thumbnail" src="/static/img/placeholder.png" />
-                    <div id="screenshot-timestamp"></div>
-                </a>
-                <button onclick="grabScreenshot()"><img src="/static/img/screenshot_icon.png"></button>
+    <div id="system-area" class="area blue">
+        <div class="columns">
+            {% if screenshot_service_running %}
+            <div class="column third pull-right">
+                <div id="screenshot" class="{{display_state|lower}}">
+                    <a onclick="showScreenshotPanel()">
+                        <img id="screenshot-thumbnail" src="/static/img/placeholder.png" />
+                        <div id="screenshot-timestamp"></div>
+                    </a>
+                    <button onclick="grabScreenshot()"><img src="/static/img/screenshot_icon.png"></button>
+                </div>
             </div>
-        {% endif %}
-
-        <table id="system-table">
-            <tr>
-                <td colspan="2" style="border-top: none; padding: 0"><h1>{{hostname}}</h1></td>
-            </tr>
-            <tr>
-                <td class="label-column">Machine</td>
-                <td class="value-column">
-                    <span style="white-space: nowrap;">
-                        <button onclick="poweroff()">Power off</button>
-                        <button onclick="reboot()" style="margin-left:0.5em;">Reboot</button>
-                    </span>
-                </td>
-            </tr>
-            {# {% if installed_presentation %} #}
-            <tr>
-                <td class="label-column">{{ installed_presentation.name }}</td>
-                <td class="value-column">
-                    <span style="white-space: nowrap;">
-                        <button onclick="startPresentation()">Start</button>
-                        <button onclick="stopPresentation()">Quit</button>
-                    </span>
-                </td>
-            </tr>
-            {# {% endif %} #}
-            <tr>
-                <td class="label-column">Display</td>
-                <td class="value-column" style="font-size: 0.75rem;">
-                    <div>
-                        <input id="display-switch" name="display-switch" class="switch" {% if display_state|lower == 'on' or display_state|lower == 'unknown'%}checked=""{% endif %} type="checkbox">
-                        <label for="display-switch">&nbsp;</label>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td class="label-column">Volume</td>
-                <td class="value-column" style="font-size: 0.75rem;">
-                    <div style="float: left; margin: 0.25rem 1em 0 0;">
-                        <input 
-                            id="volume-slider" 
-                            {% if audio_mute %}disabled{% endif %}
-                            name="volume-slider" 
-                            type="range" 
-                            min="0" max="150" 
-                            value="{{audio_volume}}" 
-                            style="margin-left: 0em;">
-                        <label for="volume-slider" id="volume-label" style="width: 3rem; display: inline-block;">{{audio_volume}} %</label>
-                    </div>
-                    <div style="float: left;">
-                        <input id="volume-switch" name="volume-switch" class="switch" type="checkbox"{% if not audio_mute %} checked{% endif %}>
-                        <label for="volume-switch">&nbsp;</label>
-                    </div>
-                </td>
-            </tr>
-        </table>
+            <div class="column two-thirds">
+            {% else %}
+            <div class="column">
+            {% endif %}
+                <table id="system-table">
+                    <tr>
+                        <td colspan="2" style="border-top: none; padding: 0"><h1 class="center" style="margin-bottom: 1rem;">{{hostname}}</h1></td>
+                    </tr>
+                    <tr>
+                        <td class="label-column">Machine</td>
+                        <td class="value-column">
+                            <span style="white-space: nowrap;">
+                                <button class="small" onclick="poweroff()">Power off</button>
+                                <button class="small" onclick="reboot()">Reboot</button>
+                            </span>
+                        </td>
+                    </tr>
+                    {# {% if installed_presentation %} #}
+                    <tr>
+                        <td class="label-column">{{ installed_presentation.prettyname }}</td>
+                        <td class="value-column">
+                            <span style="white-space: nowrap;">
+                                <button class="small" onclick="startPresentation()">Start</button>
+                                <button class="small" onclick="stopPresentation()">Quit</button>
+                            </span>
+                        </td>
+                    </tr>
+                    {# {% endif %} #}
+                    <tr>
+                        <td class="label-column">Display</td>
+                        <td class="value-column" style="font-size: 0.75rem;">
+                            <div>
+                                <input id="display-switch" name="display-switch" class="switch" {% if display_state|lower == 'on' or display_state|lower == 'unknown'%}checked=""{% endif %} type="checkbox">
+                                <label for="display-switch">&nbsp;</label>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label-column">Volume</td>
+                        <td class="value-column" style="font-size: 0.75rem;">
+                            <div style="float: left; margin: 0.25rem 1em 0 0;">
+                                <input 
+                                    id="volume-slider" 
+                                    {% if audio_mute %}disabled{% endif %}
+                                    name="volume-slider" 
+                                    type="range" 
+                                    min="0" max="150" 
+                                    value="{{audio_volume}}" 
+                                    style="margin-left: 0em;">
+                                <label for="volume-slider" id="volume-label" style="width: 3rem; display: inline-block;">{{audio_volume}} %</label>
+                            </div>
+                            <div style="float: left;">
+                                <input id="volume-switch" name="volume-switch" class="switch" type="checkbox"{% if not audio_mute %} checked{% endif %}>
+                                <label for="volume-switch">&nbsp;</label>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div> <!-- end columns -->
     </div> <!-- end system-area -->
 
     <div id="health-area" class="area">
         {% if false %}
-            <div class="graph-container">
-                <label>GPU Usage [%]</label>
-                <div id="gpu-usage-graph" class="graph"></div>
-            </div>
-            <div class="graph-container">
-                <label>GPU temperature [°C]</label>
-                <div id="gpu-temperature-graph" class="graph"></div>
+            <div class="columns">
+                <div class="column half">
+                    <label class="graph-label">GPU Usage [%]</label>
+                    <div id="gpu-usage-graph" class="graph"></div>
+                </div>
+                <div class="column half">
+                    <label class="graph-label">GPU temperature [°C]</label>
+                    <div id="gpu-temperature-graph" class="graph"></div>
+                </div>
             </div>
         {% endif %}
-        <div class="graph-container">
-            <label>CPU Usage [%]</label>
-            <div id="cpu-usage-graph" class="graph"></div>
+
+        <div class="columns">
+            <div class="column half">
+                <label class="graph-label">CPU Usage [%]</label>
+                <div id="cpu-usage-graph" class="graph"></div>
+            </div>
+            <div class="column half">
+                <label class="graph-label">CPU temperature [°C]</label>
+                <div id="cpu-temperature-graph" class="graph"></div>
+            </div>
         </div>
-        <div class="graph-container">
-            <label>CPU temperature [°C]</label>
-            <div id="cpu-temperature-graph" class="graph"></div>
-        </div>
-        <div class="graph-container">
-            <label>Memory usage [%]</label>
-            <div id="memory-usage-graph" class="graph"></div>
-        </div>
-        <div class="graph-container">
-            <label>Disk space</label>
-            <div id="hd-usage-diagram" class="graph"></div>
+        <div class="columns">
+            <div class="column half">
+                <label class="graph-label">Memory usage [%]</label>
+                <div id="memory-usage-graph" class="graph"></div>
+            </div>
+            <div class="column half">
+                <label class="graph-label">Disk space</label>
+                <div id="hd-usage-diagram" class="graph"></div>
+            </div>
         </div>
     </div> <!-- end system-area -->
 {% endblock %}

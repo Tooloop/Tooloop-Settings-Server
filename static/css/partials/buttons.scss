@@ -1,0 +1,62 @@
+button {
+  position: relative;
+  font-size: 0.75rem;
+  border-radius: $widget-border-radius;
+  border: none;
+  padding: 0.5rem 2rem;
+  box-shadow: $widget-box-shadow;
+  margin: 1rem 0;
+  font-weight: 200 !important;
+  line-height: 1;
+  color: white;
+  background: $pink;
+}
+
+button:active:enabled {
+  box-shadow: none;
+  top: 1px;
+  color: rgba(255,255,255,0.7);;
+}
+
+button.light { background: $gray4; color: $gray2; }
+button.dark  { background: $gray3; color: white; }
+button.blue  { background: $blue; color: white; }
+button.pink  { background: $pink; color: white; }
+
+button.light:active:enabled { color: rgba(0,0,0,0.7); }
+
+button:disabled {
+    opacity: 0.5;
+    background: $gray4;
+}
+
+button.discreet {
+    background: rgba(255,255,255,0.15);
+    box-shadow: none;
+    border: 1px solid darken($blue, 20%);
+    color: darken($blue, 20%);
+    font-weight: 100;
+}
+
+button.discreet:active {
+  top: 0;
+  box-shadow: inset $widget-box-shadow-light;
+}
+
+button.small {
+  padding: 0.25rem 0.5rem;
+}
+
+button.full-width {
+  width: 100%;
+}
+
+table button {
+  margin: 0;
+}
+
+table input + button,
+table button + button {
+  margin-left: 0.25rem;
+}
+

@@ -1,3 +1,5 @@
+$tab-border-width: 3px;
+
 /* Android 2.3 :checked fix */
 @keyframes fake {
     from {
@@ -13,7 +15,7 @@ body {
 
 .tabs {
     background: white;
-    height: 4.36rem;
+    height: calc(5rem - #{$tab-border-width});
     overflow: visible;
 }
 
@@ -27,7 +29,7 @@ body {
     padding-bottom: 0;
     display: inline-block;
     padding: .5rem 0;
-    padding-top: calc(2.5rem - 3px);
+    padding-top: calc(3rem - #{$tab-border-width});
     margin: 0 1rem;
     vertical-align: top;
     cursor: hand;
@@ -39,7 +41,7 @@ body {
 }
 
 .tabs label:hover {
-    border-bottom: 3px solid $gray5;
+    border-bottom: $tab-border-width solid $gray5;
 }
 
 .tabs .panel {
@@ -48,7 +50,7 @@ body {
 
 @for $i from 1 through 10 {
     .tabs input:nth-child(#{$i}):checked ~ label:nth-of-type(#{$i}) {
-        border-bottom: 3px solid $pink
+        border-bottom: $tab-border-width solid $pink
     }
     .tabs input:nth-child(#{$i}):checked ~ .panel:nth-of-type(#{$i}) {
         display: block;
