@@ -88,7 +88,7 @@ class System(object):
 
     def get_ip(self):
         try:
-            return check_output(['hostname', '-I']).rstrip('\n').split()
+            return check_output(['hostname', '-i']).rstrip('\n').split()[0]
         except IndexError as e:
             return ''
         except Exception as e:
@@ -113,7 +113,7 @@ class System(object):
         size = int(hd_info.split()[1])
 
         # assets directory
-        apps = int(os.popen('du -s -B1 /assets/apps').readline().split()[0])
+        packages = int(os.popen('du -s -B1 /assets/packages').readline().split()[0])
         data = int(os.popen('du -s -B1 /assets/data').readline().split()[0])
         logs = int(os.popen('du -s -B1 /assets/logs').readline().split()[0])
         presentation = int(os.popen('du -s -B1 /assets/presentation').readline().split()[0])
@@ -122,9 +122,9 @@ class System(object):
         return {
             'unit': 'Byte',
             'size': size,
-            'apps': apps,
             'data': data,
             'logs': logs,
+            'packages': packages,
             'presentation': presentation,
             'screenshots': screenshots
         }

@@ -273,7 +273,8 @@ $(document).ready(function() {
         { label: "Available", data: 100 },
         { label: "Data", data: 0 },
         { label: "Logs", data: 0 },
-        { label: "Presentation app", data: 0 },
+        { label: "Packages", data: 0 },
+        { label: "Presentation", data: 0 },
         { label: "Screenshots", data: 0 }
     ];
 
@@ -302,8 +303,9 @@ $(document).ready(function() {
             hdUsageData[0].data = systemUsage.hd.size - systemUsage.hd.data - systemUsage.hd.logs - systemUsage.hd.presentation - systemUsage.hd.screenshots;
             hdUsageData[1].data = systemUsage.hd.data;
             hdUsageData[2].data = systemUsage.hd.logs;
-            hdUsageData[3].data = systemUsage.hd.presentation;
-            hdUsageData[4].data = systemUsage.hd.screenshots;
+            hdUsageData[3].data = systemUsage.hd.packages;
+            hdUsageData[4].data = systemUsage.hd.presentation;
+            hdUsageData[5].data = systemUsage.hd.screenshots;
         } else {
             // push some zeros
             time = new Date().getTime()
