@@ -1,0 +1,65 @@
+// -----------------------------------------------------------------------------
+// reset
+// -----------------------------------------------------------------------------
+progress,
+progress[role] { /* polyfill */
+    /* Turns off styling - not usually needed, but good to know. */
+    appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    /* gets rid of default border in Firefox and Opera. */ 
+    border: none;
+
+    width: 100%;
+    height: 1rem;
+    border-radius: $widget-border-radius;
+    margin: 1rem 0;
+    overflow: hidden;
+    box-shadow: inset $widget-box-shadow-light;
+}
+
+/* Polyfill */
+progress[role]:after {
+    background-image: none; /* removes default background from polyfill */
+}
+/* Ensure fallback text doesn't appear in polyfill */
+progress[role] strong {
+    display: none;
+}
+
+
+// -----------------------------------------------------------------------------
+// background
+// -----------------------------------------------------------------------------
+progress,                          /* Firefox  */ 
+progress[role][aria-valuenow] {    /* Polyfill */
+   background: $widget-background !important; /* !important is needed by the polyfill */
+}
+/* Chrome */
+progress::-webkit-progress-bar { 
+    background: $widget-background;
+}
+
+// -----------------------------------------------------------------------------
+// value
+// -----------------------------------------------------------------------------
+
+/* IE10 */
+progress {
+    color: $blue;
+}
+
+/* Firefox */
+progress::-moz-progress-bar { 
+    background: $blue;  
+}
+
+/* Chrome */
+progress::-webkit-progress-value {
+    background: $blue;
+}
+
+/* Polyfill */
+progress[aria-valuenow]:before  {
+    background: $blue;
+}

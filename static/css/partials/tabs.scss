@@ -1,0 +1,58 @@
+$tab-border-width: 3px;
+
+/* Android 2.3 :checked fix */
+@keyframes fake {
+    from {
+        opacity: 1;
+    }
+    to {
+        opactity: 1
+    }
+}
+body {        
+    animation: fake 1s infinite;
+}
+
+.tabs {
+    background: white;
+    height: calc(5rem - #{$tab-border-width});
+    overflow: visible;
+}
+
+.tabs input[type='radio'] {
+    position: absolute;
+    left: -10000px;
+}
+
+.tabs label {
+    background: white;
+    padding-bottom: 0;
+    display: inline-block;
+    padding: .5rem 0;
+    padding-top: calc(3rem - #{$tab-border-width});
+    margin: 0 1rem;
+    vertical-align: top;
+    cursor: hand;
+    cursor: pointer;
+}
+
+.tabs label:nth-of-type(1) {
+    margin-left: 3rem;
+}
+
+.tabs label:hover {
+    border-bottom: $tab-border-width solid $gray5;
+}
+
+.tabs .panel {
+    display: none;
+}
+
+@for $i from 1 through 10 {
+    .tabs input:nth-child(#{$i}):checked ~ label:nth-of-type(#{$i}) {
+        border-bottom: $tab-border-width solid $pink
+    }
+    .tabs input:nth-child(#{$i}):checked ~ .panel:nth-of-type(#{$i}) {
+        display: block;
+    }
+}

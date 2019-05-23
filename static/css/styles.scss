@@ -2,26 +2,39 @@
 // VARIABELS
 // -----------------------------------------------------------------------------
 
-// Sizes
-$max-mobile-width: 375px;
+// breakpoints
+$max-mobile-width: 480px;
 $min-tablet-width: 768px;
 $min-desktop-width: 1024px;
+$max-tablet-width: $min-desktop-width - 1;
 $min-wide-desktop-width: 1366px;
-$sidebar-width: 14em;
-$button-bar-height: 4em;
 
-// Colors
+// layout
+$sidebar-width: 14rem;
+$button-bar-height: 4rem;
+
+// colors
 $pink: #e60050;
 $purple: #a2185b;
 $blue: rgb(0,196,255);
 $orange: #f39a00;
-$background-color: #f7f9fa;
-$sidebar-background: #282828;
+
+$white: white;
 $gray1: #f7f9fa;
 $gray2: #282828;
 $gray3: #404040;
 $gray4: #ccc;
 $gray5: #ddd;
+$gray6: #eee;
+
+$sidebar-background: $gray2;
+$background-color: $gray1;
+
+// widgets
+$widget-border-radius: 2px;
+$widget-box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+$widget-box-shadow-light: 0 1px 2px 0 rgba(0,0,0,0.2);
+$widget-background: rgba(0,0,0,0.05);
 
 
 // -----------------------------------------------------------------------------
@@ -30,6 +43,13 @@ $gray5: #ddd;
 
 @import "partials/fonts";
 @import "partials/logo";
+@import "partials/buttons";
+@import "partials/switch";
+@import "partials/toggle-button";
+@import "partials/tabs";
+@import "partials/progress-bar";
+@import "partials/columns";
+@import "partials/area";
 
 
 // -----------------------------------------------------------------------------
@@ -62,7 +82,7 @@ body {
 
 .hint {
   color: $gray3;
-  font-size: 0.8em;
+  font-size: 0.8rem;
   font-style: italic;
 }
 
@@ -70,10 +90,12 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 100;
 }
 
-.area h1 {
+h1 {
+  color: $blue;
+}
+
+.center {
   text-align: center;
-  margin: 0em 0 1em 0;
-  color: $purple;
 }
 
 a {
@@ -94,6 +116,10 @@ strong {
   }
 }
 
+img {
+  max-width: 100%;
+}
+
 
 // -----------------------------------------------------------------------------
 // Sidebar
@@ -102,12 +128,12 @@ strong {
   display: none;
   position: absolute;
   width: 100%;
-  height: 1em;
+  height: 1rem;
   background-color: #666;
   z-index: 98;
   text-align: center;
-  line-height: 1em;
-  padding: 1em 0;
+  line-height: 1rem;
+  padding: 1rem 0;
   color: $gray5;
   cursor: pointer;
 }
@@ -126,7 +152,7 @@ strong {
 }
 #sidebar-toggle span {
   position: relative;
-  top: -0.1em;
+  top: -0.1rem;
   cursor: pointer;
 }
 
@@ -134,8 +160,8 @@ strong {
   // font-weight: 100;
   left: 0; top: 0;
   width: $sidebar-width;
-  height: calc(100% - 1.5em);
-  padding: 1.5em 0 0 0;
+  height: calc(100% - 2rem);
+  padding: 2rem 0 0 0;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
   background-color: $sidebar-background;
@@ -143,13 +169,6 @@ strong {
 }
 #sidebar.mobile-menu {
   display: initial;
-}
-
-#sidebar .hex-logo {
-  font-size: 1.25em;
-  position: fixed;
-  bottom: 1em;
-  left: 4em;
 }
 
 @media (max-width: $min-tablet-width) {
@@ -251,16 +270,13 @@ body.appsettings #sidebar a.appsettings {
   width: calc(100% - #{$sidebar-width} - 4em);
   height: calc(#{$button-bar-height} - 2em);
   z-index: 2;
-  padding: 1em 2em;
+  padding: 1rem 2em;
   text-align: right;
   box-shadow: 2px -1px 4px rgba(0,0,0,0.5);
   background-color: $background-color;
 }
 
-.area {
-  margin: 0;
-  padding: 2em 1em 4em 1em;
-}
+
 
 // -----------------------------------------------------------------------------
 // Cover
@@ -273,9 +289,9 @@ body.appsettings #sidebar a.appsettings {
 //   right: 0px;
 //   color: white;
 //   text-decoration: none;
-//   font-size: 1em;
-//   line-height: 1em;
-//   padding: 0.5em 1em 0.8em 1em;
+//   font-size: 1rem;
+//   line-height: 1rem;
+//   padding: 0.5em 1rem 0.8em 1rem;
 //   background-color: rgba(0,0,0,0.5);
 // }
 
@@ -295,6 +311,8 @@ body.appsettings #sidebar a.appsettings {
   width:100%;
   height:100%;
   display:none;
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
 }
 
 #cover .hex-logo {
@@ -308,7 +326,7 @@ body.appsettings #sidebar a.appsettings {
 // -----------------------------------------------------------------------------
 .settings-table {
   width: 100%;
-  padding: 1em 2em 2em 2em;
+  padding: 1rem 2em 2em 2em;
 }
 
 .settings-table + .settings-table {
@@ -334,11 +352,11 @@ body.appsettings #sidebar a.appsettings {
 }
 
 // tablet
-@media (max-width: $min-wide-desktop-width) {
-  .label-column {
-    width: 20%;
-  }
-}
+// @media (max-width: $min-wide-desktop-width) {
+//   .label-column {
+//     width: 20%;
+//   }
+// }
 // tablet
 @media (max-width: $min-desktop-width) {
   .label-column {
@@ -362,12 +380,12 @@ body.appsettings #sidebar a.appsettings {
 
 .settings-table h1 {
   font-size: 1.5em;
-  line-height: 1em;
+  line-height: 1rem;
   margin: 0; padding: 0;
 }
 
 .settings-table h2 {
-  font-size: 1em;
+  font-size: 1rem;
   font-weight: normal;
   margin: 2rem 0 0 0;
   color: $gray3;
@@ -409,15 +427,15 @@ body.appsettings #sidebar a.appsettings {
 // -----------------------------------------------------------------------------
 
 #screenshot {
-  margin: 4.6em 1em 0 1em;
+  margin: 3.6rem 0 0 0;
   position: relative;
-  float: right;
-  z-index: 1;
+  box-shadow: $widget-box-shadow-light;
 }
 
-#screenshot {
-  box-shadow: 0 3px 3px rgba(0,0,0,0.2);
-  width: 33.3333%;
+@media (max-width: $min-desktop-width - 1) {
+  #screenshot {
+    margin: 0;
+  }
 }
 
 #screenshot a {
@@ -425,7 +443,7 @@ body.appsettings #sidebar a.appsettings {
 }
 
 #screenshot button {
-  line-height: 1em;
+  line-height: 1rem;
   margin: 0;
   padding: 0;
   width: 2em;
@@ -445,11 +463,11 @@ body.appsettings #sidebar a.appsettings {
   top: 0;
   left: 0;
   width: 100%;
-  height: calc(100% - 1em);
+  height: calc(100% - 1rem);
   color: white;
   content: "Display off";
   text-align: center;
-  padding: 1em 0 0 0;
+  padding: 1rem 0 0 0;
 }
 #screenshot.off::after {
   display: initial;
@@ -473,7 +491,7 @@ body.appsettings #sidebar a.appsettings {
 #screenshot-timestamp {
   font-size: 0.75em;
   background-color: rgba(0,0,0,0.5);
-  padding: 0.1em 1em;
+  padding: 0.1rem 1rem;
   color: white;
   text-align: center;
 }
@@ -492,46 +510,15 @@ body.appsettings #sidebar a.appsettings {
   cursor: zoom-out;
 }
 
-#system-area {
-  background-color: rgb(183, 210, 219);;
-  overflow: hidden;
-}
-
 #system-table {
-  margin: 0 auto;
-  padding: 1rem 2rem 2rem 2rem;
   border-collapse: collapse;
-  color: white;
-  font-weight: 100;
-  width: calc(66.66666% - 4em);
+  width: 100%;
 }
 
 #system-table td {
-    border-top: 1px solid #333;
-    border-bottom: 1px solid #333;
+    border-top: 1px solid $gray3;
+    border-bottom: 1px solid $gray3;
     padding: 0.5rem 1rem;
-}
-
-// tablet
-@media (max-width: $min-desktop-width) {
-  #screenshot {
-    min-width: 60%;
-    margin: 0 auto 2em auto;
-    float: none;
-    width: calc(100% - 4em);
-  }
-
-  #system-table {
-    width: calc(100% - 4em);
-  }
-}
-
-// mobile
-@media (max-width: ($max-mobile-width)) {
-  #system-table,
-  #screenshot {
-    width: 100%;
-  }
 }
 
 
@@ -539,17 +526,7 @@ body.appsettings #sidebar a.appsettings {
 // Health area
 // -----------------------------------------------------------------------------
 
-// graphs
-.graph-container {
-  width: calc(50% - 2em);
-  float: left;
-  margin: 1em;
-}
-
-.graph-container:nth-child(2n) {
-}
-
-.graph-container label {
+.graph-label {
   font-weight: 300;
   display: block;
   text-align: center;
@@ -558,20 +535,13 @@ body.appsettings #sidebar a.appsettings {
 
 .graph {
   width: 100%;
-  height: 12em;
+  height: 10rem;
   font-size: 0.8em;
 }
 
 .flot-text {
 }
 
-@media (max-width: ($min-tablet-width - 1)) {
-  .graph-container {
-    margin-right: 0;
-    float: none;
-    width: 100%;
-  }
-}
 
 
 // -----------------------------------------------------------------------------
@@ -592,52 +562,14 @@ textarea {
   border: 1px solid $gray4;
   background-color: white;
   padding: 0.5em;
-  border-radius: 2px;
+  border-radius: $widget-border-radius;
   width: 100%;
   max-width: 15rem;
 }
 
 textarea {
-  width: calc(100% - 1em);
+  width: calc(100% - 1rem);
   height:10em;
-}
-
-// button
-button {
-  position: relative;
-  font-size: 0.8em;
-  border-radius: 2px;
-  border: none;
-  padding: 0.5em 2em;
-  background-image: linear-gradient($pink, $purple);
-  color: white;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.5);
-  margin: 0 0.2em 0.4em 0;
-}
-
-button:active {
-  box-shadow: none;
-  top: 1px;
-  color: $gray5;
-}
-
-table button {
-  line-height: 1em;
-  padding: 0.5em;
-  font-weight: 100;
-}
-
-button.discreet {
-    background: rgba(255,255,255,0.15);
-    box-shadow: none;
-    border: 1px solid darken($blue, 20%);
-    color: darken($blue, 20%);
-    font-weight: 100;
-}
-
-button.discreet:active {
-  top: 0;
-  box-shadow: inset 0 1px 2px 0 rgba(0,0,0,0.3);
 }
 
 label {
@@ -659,215 +591,116 @@ input[type=number][disabled] ~ label {
   opacity: 0.3;
 }
 
-// switch
-input.switch:empty {
-  display: none;
-}
-input.switch:empty ~ label {
-  position: relative;
-  float: left;
-  line-height: 1.6em;
-  text-indent: 4.5em;
-  margin: 0.2em 0;
-  cursor: pointer;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-}
-
-input.switch:empty ~ label:before,
-input.switch:empty ~ label:after
-{
-  position: absolute;
-  display: block;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  content: ' ';
-  width: calc(3.5em + 1px);
-  background-color: $gray5;
-  -webkit-transition: all 100ms ease-out;
-  transition: all 100ms ease-out;
-  border-radius: 3px;
-}
-
-
-input.switch:empty ~ label:after
-{
-  width: 1.5em;
-  top: 1px;
-  bottom: 1px;
-  margin-left: 1px;
-  background-color: #fff;
-  border-radius: 2px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.5);
-}
-input.switch:checked ~ label:before
-{
-  background-color: $pink;
-}
-
-input.switch:checked ~ label:after
-{
-  margin-left: 2em;
-}
-
-
-// toggle button
-
-input.toggle-button { display:none; }
-input.toggle-button + label { 
-  color:white;
-  background-color: $gray5;
-  text-align: center;
-  display: inline-block;
-  min-width: 1.2rem;
-  height: 1.2rem;
-  line-height: 1.2rem;
-  -webkit-user-select: none; /* Safari */        
-  -moz-user-select: none; /* Firefox */
-  -ms-user-select: none; /* IE10+/Edge */
-  user-select: none; /* Standard */
-}
-input.toggle-button:checked + label {
-  background-color: $pink;
-}
-
 
 
 // -----------------------------------------------------------------------------
 // App center
 // -----------------------------------------------------------------------------
-#active-app-area {
-  background-color: #333;
-  overflow: auto;
-  color: white;
+
+// installed-presentation
+
+// #installed-presentation img.preview-image {
+//   border: 1px solid rgba(255,255,255,0.3);
+// }
+
+
+#installed-presentation button {
+  margin-bottom: 0;
 }
 
-#active-app-info,
-#active-app-description {
-  margin: 1em;
-  float: left;
-  width: calc(50% - 2em);
-}
+// packages
 
-#active-app-area img {
-  border: 1px solid rgba(255,255,255,0.3);
-  float: left;
-  width: calc(33.33333% - 3em);
-  margin: 1em;
-}
-
-#active-app-area .current-app {
-  font-size: 0.8em;
-  background-color: #999;
-  color: #333;
-  padding-left: 1em;
-  padding-right: 1em;
-  border-radius: 2px;
-}
-
-#active-app-area h1 {
-  text-align: left;
-  color: $blue;
-  margin: 0.5em 0 0 0;
-}
-
-#appcenter-area .app {
+#appcenter .package {
   float: left;
   width: calc(33.333% - 2em);
-  background-color: white;
   padding: 0;
-  margin-bottom: 6em;
-  margin-left: 1em;
-  margin-right: 1em;
+  margin-bottom: 4rem;
+  margin-left: 1rem;
+  margin-right: 1rem;
   position: relative;
 }
 
-.app img {
+.package img {
   width: 100%;
   display: block;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
 }
 
-.app .info-area {
-    position: absolute;
-    top: 0;
-    height: calc(100% + 4em);
-    width: 100%;
-    overflow: hidden;
-}
-
-.app .info {
+.package .metainfo {
   position: relative;
   height: 100%;
-  top: calc(100% - 4em);
   transition: top 0.3s;
-  padding: 0.5em 1em;
-  background-color: rgba($gray5,0.9);
+  padding: 0.5em 0;
 }
 
-.app:hover .info {
-  top: 0;
-}
-
-.app .info .name {
+.package .metainfo .name {
   display: block;
   line-height: 2em;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
 }
-.app .info .developer {
-  display: block;
-  font-size: 0.8em;
-  line-height: 1em;
-  margin-bottom: 0.875em;
-}
 
-.app .info .description {
+.package .metainfo .description {
   font-size: 0.8em;
-  height: calc(100% - 10em);
-  overflow: auto;
+  height: 3em;
+  overflow: hidden;
   margin: 0.5em 0 0 0;
+  line-height: 1.5em;
 }
 
-.app .info button {
-  padding: 0.5em 0;
-  width: calc(50% - 0.166666em);
-  margin: 1.25em 0 0 0;
-}
+// .package .metainfo button {
+//   padding: 0.5em 0;
+//   width: calc(50% - 0.166666em);
+//   margin: 1.25em 0 0 0;
+// }
 
 // mobile
 @media (max-width: $min-tablet-width) {
-  #appcenter-area .app {
-    width: calc(100% - 2em);
-  }
-  #active-app-info,
-  #active-app-description {
-    // float: none;
+  #appcenter .package {
     width: calc(100% - 2em);
   }
 }
 
 // tablet
 @media (min-width: $min-tablet-width) and (max-width: $min-desktop-width) {
-  #appcenter-area .app {
+  #appcenter .package {
     width: calc(50% - 2em);
   }
 }
 
 // desktop
 @media (min-width: $min-wide-desktop-width) {
-  #appcenter-area .app {
+  #appcenter .package {
     width: calc(25% - 2em);
   }
-  #active-app-info {
-    width: calc(33.333% - 2em);
-  }
-  #active-app-description {
-    width: calc(66.666% - 2em);
-  }
+}
+
+
+// -----------------------------------------------------------------------------
+// package details
+// -----------------------------------------------------------------------------
+
+#package-media {
+  padding: 0;
+}
+
+#package-media ul {
+  list-style: none;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 0;
+  padding: 2rem 0rem;
+  white-space: nowrap;
+}
+
+#package-media li {
+    display: inline-block;
+    margin: 0 1rem;
+}
+
+#package-media img {
+    width: 16rem;
 }
 
 // off loader_animation

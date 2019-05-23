@@ -1,0 +1,53 @@
+input.switch:empty {
+  display: none;
+}
+input.switch:empty ~ label {
+  position: relative;
+  float: left;
+  line-height: 1.6em;
+  text-indent: 4.5em;
+  margin: 0.2em 0;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+input.switch:empty ~ label:before,
+input.switch:empty ~ label:after
+{
+  position: absolute;
+  display: block;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  content: ' ';
+  width: calc(3.5em + 1px);
+  background-color: $widget-background;
+  -webkit-transition: all 100ms ease-out;
+  transition: all 100ms ease-out;
+  border-radius: $widget-border-radius + 1;
+}
+
+
+input.switch:empty ~ label:after
+{
+  width: 1.5em;
+  top: 1px;
+  bottom: 1px;
+  margin-left: 1px;
+  background-color: #fff;
+  border-radius: $widget-border-radius;
+  box-shadow: $widget-box-shadow;
+}
+input.switch:checked ~ label:before
+{
+  background-color: $blue;
+  box-shadow: 0 0 2px rgba(255,255,255,0.25)
+}
+
+input.switch:checked ~ label:after
+{
+  margin-left: 2em;
+}
