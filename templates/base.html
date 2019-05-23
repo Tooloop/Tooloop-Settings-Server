@@ -14,10 +14,13 @@
 <body class="{{page}}" lang="en">
     {% include 'parts/sidebar.html' %}
 
-    <div id="settings-panel">
+    <div id="settings-panel" class="panel">
         {% block content %}
         {% endblock %}
     </div>
+
+    {% block end_of_page %}
+    {% endblock %}
 
     {% include 'parts/footer-scripts.html' %}
 

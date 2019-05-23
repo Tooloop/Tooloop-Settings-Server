@@ -1,10 +1,11 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div id="system-area" class="area" style="padding: 2em 0; text-align: center;">
-            <h1 style="margin-bottom: 0">Tooloop OS</h1>
-            <span>{{os_version}}</span>
+<div class="area blue" style="padding: 33px 0; text-align: center;">
+    <h1 style="margin-bottom: 0">Tooloop OS</h1>
+    <span>{{os_version}}</span>
 </div>
+
 <table class="settings-table">
     {# ---------------------------------------------------------------------- #}
     {# System #}
@@ -15,7 +16,7 @@
         <td class="value-column">
             <form id="hostname-form">
                 <input type="text" id="hostname-input" value="{{hostname}}">
-                <button type="submit">Save</button>
+                <button class="blue" type="submit">Save</button>
             </form>
         </td>
         <tr>
@@ -31,15 +32,15 @@
             <td class="label-column">Remote access</td>
             <td class="value-column">
                 <span style="white-space: nowrap;">
-                    {% if ssh_running %}<button onclick="document.location='ssh://tooloop@{{ip_address}}'">SSH</button>{% endif %}
-                    {% if vnc_running %}<button onclick="document.location='vnc://{{ip_address}}'">Screen sharing</button>{% endif %}
+                    {% if ssh_running %}<button class="light" onclick="document.location='ssh://tooloop@{{ip_address}}'">SSH</button>{% endif %}
+                    {% if vnc_running %}<button class="light" onclick="document.location='vnc://{{ip_address}}'">Screen sharing</button>{% endif %}
                 </span>
             </td>
         </tr>
         {% endif %}
         {# <tr>
             <td class="label-column">Security updates</td>
-            <td>4 <button onclick="" style="margin-left:1em;" class="discreet">Install updates</button></td>
+            <td>4 <button class="light" onclick="" style="margin-left:1em;" class="discreet">Install updates</button></td>
         </tr> #}
     </tr>
     {# ---------------------------------------------------------------------- #}
@@ -151,7 +152,7 @@
                 <input type="password" id="old-password" name="old-password"/> <label for="old-password">Old password</label><br/>
                 <input type="password" id="new-password" name="new-password"/> <label for="new-password">New password</label><br/>
                 <input type="password" id="repeat-new-password" name="repeat-new-password" /> <label for="repeat-new-password">Repeat new password</label><br/>
-                <button type="submit">Save</button>
+                <button class="blue" type="submit">Save</button>
             </form>
         </td>
     </tr>

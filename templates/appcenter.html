@@ -2,71 +2,151 @@
 
 {% block content %}
 
-{% if installed_presentation %}
-<div id="active-app-area" class="area">
-    
-    <img src="https://via.placeholder.com/960x540" />
-    <div id="active-app-description">
-        <span class="current-app">Currently installed</span>
-        <h1>{{installed_presentation.shortname}}</h1>
-        <p>
-            Version {{installed_presentation.candidate.version}}<br/>
-            By <a href="{{installed_presentation.candidate.homepage}}">{{installed_presentation.candidate.record["Maintainer"]}}</a>
-        </p>
-        <span>{{installed_presentation.candidate.summary}}</span>
-        <p>
-            <button onclick="uninstall('{{installed_presentation.shortname}}')">Remove</button>
-            {% if installed_presentation.has_settings %}
-            <button onclick="document.location='/appsettings';">Settings</button>
-            {% endif %}
-        </p>
-  </div>
-</div>
-{% endif %}
-
-<div id="appcenter-area" class="area">
-
-    <h2>Presentations</h2>
-    {% for package in available_packages.presentations if not package.shortname == installed_presentation.name %}
-    <div class="app">
-        <img class="preview-image" src="https://via.placeholder.com/960x540" />
-        <div class="info-area">
-            <div class="info">
-                <strong class="name"{% if package.is_installed %} style="color: red"{% endif %}>{{package.candidate.record["Name"]}}</strong>
-                <span class="developer">By <a href="{{package.candidate.homepage}}">{{package.candidate.record["Maintainer"]}}</a></span>
-                <div class="description">{{package.candidate.summary}}</div>
-                {% if package.is_installed %}
-                    <button onclick="uninstall('{{package.shortname}}')">Remove</button>
-                {% else %}
-                    <button onclick="install('{{package.shortname}}')">Install</button>
-                {% endif %}
-            </div>
-        </div>
+{# <div class="area">
+    <div class="columns">
+        <div class="column half">1</div>
+        <div class="column half">2</div>
     </div>
-    {% endfor %}
-
-    <h2 style="clear:both">Addons</h2>
-    {% for package in available_packages.addons if not package.shortname == installed_presentation.name %}
-    <div class="app">
-        <img class="preview-image" src="https://via.placeholder.com/960x540" />
-        <div class="info-area">
-            <div class="info">
-                <strong class="name"{% if package.is_installed %} style="color: red"{% endif %}>{{package.candidate.record["Name"]}}</strong>
-                <span class="developer">By <a href="{{package.candidate.homepage}}">{{package.developer}}</a></span>
-                <div class="description">{{package.candidate.summary}}</div>
-                {% if package.is_installed %}
-                    <button onclick="uninstall('{{package.shortname}}')">Remove</button>
-                {% else %}
-                    <button onclick="install('{{package.shortname}}')">Install</button>
-                {% endif %}
-            </div>
-        </div>
+    <div class="columns">
+        <div class="column third">1</div>
+        <div class="column two-thirds">2</div>
     </div>
-    {% endfor %}
+    <div class="columns">
+        <div class="column third">1</div>
+        <div class="column third">2</div>
+        <div class="column third">3</div>
+    </div>
+    <div class="columns">
+        <div class="column fourth">1</div>
+        <div class="column fourth">2</div>
+        <div class="column fourth">3</div>
+        <div class="column fourth">4</div>
+    </div>
+</div> #}
+
+<div id="appcenter">
+
+    <div class="tabs" role="tablist">
+        <input type="radio" title="Installed" name="tab-state" id="installed" role="tab" checked />
+        <input type="radio" title="Presentations" name="tab-state" id="presentations" role="tab" />
+        <input type="radio" title="Addons" name="tab-state" id="addons" role="tab" />
+
+        <label for="installed" id="installed-tab" class="tab">Installed</label>
+        <label for="presentations" id="presentations-tab" class="tab">Presentations</label>
+        <label for="addons" id="addons-tab" class="tab">Addons</label>
+        <button style="float: right; margin: 2.6rem 3rem 0 2rem;" disabled="disabled">Install from file</button>
+
+
+        {# ------------------------------------------------------------------ #}
+        {# Installed #}
+        {# ------------------------------------------------------------------ #}
+        <div id="installed-panel" class="panel active" role="tabpanel">
+            <div id="installed-presentation" class="area gray">
+                <div class="columns">
+                    {% if installed_presentation %}
+                        <div class="column third">
+                            <img class="preview-image" src="{{installed_presentation.preview_image}}" />
+                        </div>
+                        <div class="metainfo column two-thirds">
+                            <h1>{{installed_presentation.prettyname}}</h1>
+                            <p>
+                                Version {{installed_presentation.candidate.version}}<br/>
+                                By <a href="{{installed_presentation.candidate.homepage}}">{{installed_presentation.maintainer}}</a>
+                            </p>
+                            <p>{{installed_presentation.candidate.summary}}</p>
+                            {% if not installed_presentation.has_settings %}
+                            <button class="light" onclick="document.location='/appsettings';">Settings</button>
+                            {% endif %}
+                            <button onclick="uninstall('{{installed_presentation.shortname}}', '{{installed_presentation.name}}')">Remove</button>
+                        </div>
+                    {% else %}
+                        <div class="column">
+                            <p>No presentation installed</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="area">
+                <h2>Addons</h2>
+                {% for package in available_packages.addons if package.is_installed %}
+                <div class="package">
+                    <a href="/appcenter/package/{{package.name}}"><img class="preview-image" src="{{package.preview_image}}" /></a>
+                    <div class="metainfo">
+                        <a href="/appcenter/package/{{package.name}}"><strong class="name">{{package.prettyname}}</strong></a>
+                        <div class="description">{{package.candidate.summary}}</div>
+                        {% if package.is_installed %}
+                            <button onclick="uninstall('{{package.shortname}}', '{{package.name}}')">Remove</button>
+                        {% else %}
+                            <button class="blue" onclick="install('{{package.shortname}}', '{{package.name}}')">Install</button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+        </div>
+
+        {# ------------------------------------------------------------------ #}
+        {# Presentations #}
+        {# ------------------------------------------------------------------ #}
+        <div id="presentations-panel" class="panel area" role="tabpanel">
+            {% for package in available_packages.presentations %}
+            <div class="package{% if package.is_installed %} installed{% endif %}">
+                <a href="/appcenter/package/{{package.name}}"><img class="preview-image" src="{{package.preview_image}}" /></a>
+                <div class="metainfo">
+                    <a href="/appcenter/package/{{package.name}}"><strong class="name">{{package.prettyname}}</strong></a>
+                    <div class="description">{{package.candidate.summary}}</div>
+                    {% if package.is_installed %}
+                        <button onclick="uninstall('{{package.shortname}}', '{{package.prettyname}}')">Remove</button>
+                    {% else %}
+                        <button class="blue" onclick="install('{{package.shortname}}', '{{package.prettyname}}')">Install</button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {# ------------------------------------------------------------------ #}
+        {# Addons #}
+        {# ------------------------------------------------------------------ #}
+        <div id="addons-panel" class="panel area" role="tabpanel">
+            {% for package in available_packages.addons %}
+            <div class="package{% if package.is_installed %} installed{% endif %}">
+                <a href="/appcenter/package/{{package.name}}"><img class="preview-image" src="{{package.preview_image}}" /></a>
+                <div class="metainfo">
+                    <a href="/appcenter/package/{{package.name}}"><strong class="name">{{package.prettyname}}</strong></a>
+                    <div class="description">{{package.candidate.summary}}</div>
+                    {% if package.is_installed %}
+                        <button onclick="uninstall('{{package.shortname}}', '{{package.prettyname}}')">Remove</button>
+                    {% else %}
+                        <button class="blue" onclick="install('{{package.shortname}}', '{{package.prettyname}}')">Install</button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
 
 </div>
 {% endblock %}
 
+{% block end_of_page %}
+    <div id="package-progress" style="height: 100%; width: 100%; position: fixed; z-index: 100; display: none;">
+        <div style="background-color: white; margin: 15% auto; padding: 20px; max-width: 640px; width: 100%; overflow: auto;">
+            <h1>Installing Processing Example</h1>
+            
+
+            <ul class="terminal" style="background: #f7f9fa; font-family: monospace; font-weight: lighter; font-size: 12px; height: 100px; overflow: auto; white-space: nowrap; list-style: none; padding: 1rem; line-height: 1.3;">
+            </ul>
+
+            <progress value="43" max="100"></progress>
+
+            <button disabled class="light" style="float: right" onclick="location.reload();">OK</button>
+        </div>
+    </div>
+{% endblock %}
 
 {% block page_footer_scripts %}
 <script type="text/javascript">
@@ -74,28 +154,63 @@
     $(document).ready(function() {
     });
 
-    {#
-    if(!confirm("Do you want to install "+name+"? {{installed_presentation.shortname}} will be uninstalled!") ) {
-        return;
+    var showProgress = function(title) {
+        TooloopUI.showCover();
+        $('#package-progress h1').html(title);
+        $('#package-progress .terminal').empty();
+        $('#package-progress button').attr('disabled', true);
+        $('#package-progress').fadeIn(100);
     }
-    #}
 
-    var install = function(name) {
+    var updateProgress = function(event, source) {
+        progress = JSON.parse(event.data);
+        $('#package-progress .terminal').append('<li>'+progress.task+'</li>');
+        $('#package-progress .terminal').scrollTop(99999999999);
+        $('#package-progress progress').val(progress.percent)
+    };
+
+    var install = function(package, prettyname) {
+        // show modal
+        showProgress("Installing " + prettyname)
+        // listen to progress updates
+        var source = new EventSource("/tooloop/api/v1.0/appcenter/progress");
+        source.onmessage = function(event) { updateProgress(event, source) };
+        // install
         $.ajax({
-            url: "/tooloop/api/v1.0/appcenter/install/"+name
+            url: "/tooloop/api/v1.0/appcenter/install/"+package
         }).done(function( data ) {
-           location.reload();
+            source.close();
+            $('#package-progress button').removeAttr('disabled');
+        }).fail(function(jqXHR, textStatus, errorThrown){
+            source.close();
+            $('#package-progress .terminal').append('<li class="error">'+jqXHR.status+' '+errorThrown+'</li>');
+            $('#package-progress .terminal').append('<li class="error">'+textStatus+'</li>');
+            $('#package-progress .terminal').append('<li class="error">'+jqXHR.responseText+'</li>');
+            $('#package-progress button').removeAttr('disabled');
         });
-    }
+    };
 
 
-    var uninstall = function(name) {
+    var uninstall = function(package, prettyname) {
+        // show modal
+        showProgress("Removing " + prettyname)
+        // listen to progress updates
+        var source = new EventSource("/tooloop/api/v1.0/appcenter/progress");
+        source.onmessage = function(event) { updateProgress(event, source) };
+        // uninstall
         $.ajax({
-            url: "/tooloop/api/v1.0/appcenter/uninstall/"+name
+            url: "/tooloop/api/v1.0/appcenter/uninstall/"+package
         }).done(function( data ) {
-           location.reload();
+           $('#package-progress button').removeAttr('disabled');
+            source.close();
+        }).fail(function(jqXHR, textStatus, errorThrown){
+            source.close();
+            $('#package-progress .terminal').append('<li class="error">'+jqXHR.status+' '+errorThrown+'</li>');
+            $('#package-progress .terminal').append('<li class="error">'+textStatus+'</li>');
+            $('#package-progress .terminal').append('<li class="error">'+jqXHR.responseText+'</li>');
+            $('#package-progress button').removeAttr('disabled');
         });
-    }
+    };
 
 </script>
 {% endblock %}

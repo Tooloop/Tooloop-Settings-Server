@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block page_header_scripts %}
+{% endblock %}
+
+{% block content %}
+
+<div id="package-details">
+
+    <div id="package-media" class="area gray">
+        <ul>
+            <li><img src="https://via.placeholder.com/640x360"></li>
+            <li><img src="https://via.placeholder.com/640x360"></li>
+            <li><img src="https://via.placeholder.com/640x360"></li>
+            <li><img src="https://via.placeholder.com/640x360"></li>
+            <li><img src="https://via.placeholder.com/640x360"></li>
+            <li><img src="https://via.placeholder.com/640x360"></li>
+            <li><img src="https://via.placeholder.com/640x360"></li>
+        </ul>
+    </div>
+    <div class="area">
+        <div class="columns">
+            <div class="column fourth tablet-third pull-right">
+                {% if true %}
+                    <button class="blue full-width">Install</button>
+                {% else %}
+                    <button class="full-width">Remove</button>
+                {% endif %}
+
+                <table>
+                    <tr>
+                        <td>Version</td>
+                        <td>2.1</td>
+                    </tr>
+                    <tr>
+                        <td>Developer</td>
+                        <td><a href="#">vollstock</a></td>
+                    </tr>
+                    <tr>
+                        <td>Compatibility</td>
+                        <td>
+                            <input type="checkbox" onclick="return false;"><label>S</label><br>
+                            <input type="checkbox" onclick="return false;" checked="checked"><label>M</label><br>
+                            <input type="checkbox" onclick="return false;" checked="checked"><label>L</label><br>
+                            <input type="checkbox" onclick="return false;" checked="checked"><label>XL</label>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="column three-fourth tablet-two-thirds">
+                <h1>{{package}}</h1>
+                <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
+
+                <h2>Subheadline</h2>
+
+                <p>Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. </p>
+
+                <p>Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. </p>
+
+
+                <h2>Subheadline</h2>
+
+                <p>Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer possim assum. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block end_of_page %}
+{% endblock %}
+
+{% block page_footer_scripts %}
+{% endblock %}
