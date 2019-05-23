@@ -36,7 +36,6 @@
         <label for="addons" id="addons-tab" class="tab">Addons</label>
         <button style="float: right; margin: 2.6rem 3rem 0 2rem;" disabled="disabled">Install from file</button>
 
-
         {# ------------------------------------------------------------------ #}
         {# Installed #}
         {# ------------------------------------------------------------------ #}
@@ -45,7 +44,7 @@
                 <div class="columns">
                     {% if installed_presentation %}
                         <div class="column third">
-                            <img class="preview-image" src="{{installed_presentation.preview_image}}" />
+                            <img class="preview-image" src="/appcenter/{{package.thumbnail}}" />
                         </div>
                         <div class="metainfo column two-thirds">
                             <h1>{{installed_presentation.prettyname}}</h1>
@@ -71,7 +70,7 @@
                 <h2>Addons</h2>
                 {% for package in available_packages.addons if package.is_installed %}
                 <div class="package">
-                    <a href="/appcenter/package/{{package.name}}"><img class="preview-image" src="{{package.preview_image}}" /></a>
+                    <a href="/appcenter/package/{{package.name}}"><img class="preview-image" src="/appcenter/{{package.thumbnail}}" /></a>
                     <div class="metainfo">
                         <a href="/appcenter/package/{{package.name}}"><strong class="name">{{package.prettyname}}</strong></a>
                         <div class="description">{{package.candidate.summary}}</div>
@@ -93,7 +92,7 @@
         <div id="presentations-panel" class="panel area" role="tabpanel">
             {% for package in available_packages.presentations %}
             <div class="package{% if package.is_installed %} installed{% endif %}">
-                <a href="/appcenter/package/{{package.name}}"><img class="preview-image" src="{{package.preview_image}}" /></a>
+                <a href="/appcenter/package/{{package.name}}"><img class="preview-image" src="/appcenter/{{package.thumbnail}}" /></a>
                 <div class="metainfo">
                     <a href="/appcenter/package/{{package.name}}"><strong class="name">{{package.prettyname}}</strong></a>
                     <div class="description">{{package.candidate.summary}}</div>
@@ -113,7 +112,7 @@
         <div id="addons-panel" class="panel area" role="tabpanel">
             {% for package in available_packages.addons %}
             <div class="package{% if package.is_installed %} installed{% endif %}">
-                <a href="/appcenter/package/{{package.name}}"><img class="preview-image" src="{{package.preview_image}}" /></a>
+                <a href="/appcenter/package/{{package.name}}"><img class="preview-image" src="/appcenter/{{package.thumbnail}}" /></a>
                 <div class="metainfo">
                     <a href="/appcenter/package/{{package.name}}"><strong class="name">{{package.prettyname}}</strong></a>
                     <div class="description">{{package.candidate.summary}}</div>
@@ -152,6 +151,10 @@
 <script type="text/javascript">
 
     $(document).ready(function() {
+        let hash = document.location.hash;
+        if (hash) {
+            document.getElementById(hash.substring(1, hash.length)).checked = true;
+        }
     });
 
     var showProgress = function(title) {

@@ -138,7 +138,7 @@ class PackageJSONEncoder(JSONEncoder):
                     'description': obj.candidate.description,
                     'section': obj.section,
                     'architecture': obj.architecture(),
-                    'preview_image': obj.preview_image,
+                    'thumbnail': obj.thumbnail,
                     'media': obj.media,
                     # TODO:
                     # 'pre_depends': pre_depends,
@@ -205,13 +205,6 @@ class AppCenter(object):
         #     else:
         #         abort(404)
 
-
-    def get_installed_presentation(self):
-        return self.installed_presentation
-
-    def get_installed_presentation_settings_controller(self):
-        return self.installed_presentation_settings_controller
-
     def get_available_packages(self):
         # lazy loading
         if not self.packages:
@@ -239,6 +232,11 @@ class AppCenter(object):
 
         return self.packages
 
+    def get_installed_presentation(self):
+        return self.installed_presentation
+
+    def get_installed_presentation_settings_controller(self):
+        return self.installed_presentation_settings_controller
 
     def add_tooloop_metainfo(self, package):
         try:
@@ -258,15 +256,22 @@ class AppCenter(object):
         except Exception as e:
             pass
 
-        package.preview_image = None
-        url_path = '/appcenter/'+package.shortname+'/preview_image'
-        file_path = '/assets/packages/media/'+package.shortname+'/preview_image'
-        if isfile(file_path+'.png'):
-            package.preview_image = url_path+'.png'
-        elif isfile(file_path+'.jpg'):
-            package.preview_image = url_path+'.jpg'
+        package.thumbnail = None
+        try:
+            package.thumbnail = package.candidate.record["Thumbnail"]
+        except Exception as e:
+            pass
 
         package.media = []
+        try:
+            media_string = package.candidate.record["Media"]
+            package.media = [x.strip() for x in media_string.split(',')]
+        except Exception as e:
+            pass
+
+
+    def get_package_info(package):
+        pass
 
 
     def update_packages(self):
