@@ -11,6 +11,7 @@ apt install -y \
     python-augeas \
     python-crontab \
     python-pexpect \
-    python-apt
+    python-apt \
+    aptitude
 
 pip install flask
