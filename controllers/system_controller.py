@@ -88,7 +88,7 @@ class System(object):
 
     def get_ip(self):
         try:
-            return check_output(['hostname', '-i']).rstrip('\n').split()[0]
+            return check_output(['hostname', '-I']).rstrip('\n').split()[0]
         except IndexError as e:
             return ''
         except Exception as e:
@@ -141,10 +141,16 @@ class System(object):
         temperature = 0
         if thermal_zones:
             # get the temperatures and sum them up
+            thermal_zone_count = 0
             for zone in thermal_zones:
-                temperature += float(os.popen('cat '+zone+'/temp').readline().strip())/1000
+                try:
+                    temperature += float(os.popen('cat '+zone+'/temp').readline().strip())/1000
+                    thermal_zone_count += 1
+                except:
+                    pass
             # calculate the average
-            temperature /= len(thermal_zones)
+            if thermal_zone_count > 0:
+                temperature /= thermal_zone_count#len(thermal_zones)
 
         usage = self.cpu_load.get_cpu_load()
         return {
