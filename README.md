@@ -1,6 +1,12 @@
-# Tooloop Settings Server
+# Deprecated
 
-![](https://img.shields.io/badge/status-alpha-red.svg)
+This repository is deprecated in favour of the rewritten https://github.com/tooloop/Tooloop-Control.
+It has a much more modern (i. e. easier to maintain) aproach for the frontend code using Vue components and the Bulma CSS framework.
+
+
+## Tooloop Settings Server
+
+![](https://img.shields.io/badge/status-Deprecated-red.svg)
 ![](https://img.shields.io/github/license/vollstock/tooloop-settings-server.svg)
 
 A browser based settings app for [Tooloop OS](https://github.com/vollstock/tooloop-os). It’s using the [Flask framework](http://flask.pocoo.org/).
